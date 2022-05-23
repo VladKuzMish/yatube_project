@@ -15,16 +15,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-<<<<<<< HEAD
-
-
 
 urlpatterns = [
-    # импорт правил из приложения posts
-=======
-
-urlpatterns = [
->>>>>>> ac30038d7e296836f9867ed3f94a6eda1bb0aee4
     path('', include('posts.urls')),
     path('admin/', admin.site.urls),
 ]
