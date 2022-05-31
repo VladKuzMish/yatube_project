@@ -1,7 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
-User = get_user_model() 
+User = get_user_model()
+
 
 class Post(models.Model):
     text = models.TextField()
@@ -16,11 +17,12 @@ class Post(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name='posts'
-    ) 
+    )
 # Create your models here.
 
+
 class Group(models.Model):
-    title = models.CharField('Название',max_length=50)
+    title = models.CharField('Название', max_length=50)
     description = models.TextField()
     slug = models.SlugField(max_length=50, unique=True,)
 
