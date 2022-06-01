@@ -20,3 +20,7 @@ urlpatterns = [
     path('', include('posts.urls', namespace='posts')),
     path('admin/', admin.site.urls),
 ]
+
+
+"""source venv/Scripts/activate"""
+"""python manage.py runserver"""

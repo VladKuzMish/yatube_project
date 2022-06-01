@@ -13,14 +13,13 @@
     <meta name="msapplication-TileColor" content="#000">
     <meta name="theme-color" content="#ffffff">
     <!-- Подключен файл со стандартными стилями бустрап -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <title>{{title}}</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <title>Последние обновления на сайте</title>
   </head>
   <body>
-    {% include 'includes/header.html' %}
-    <main> 
-      <!-- класс py-5 создает отступы сверху и снизу блока -->
-      <div class="container py-5">     
+    {% include 'includes/header.html' %}  
+      <main> 
+      <div class="container">        
         <h1>Последние обновления на сайте</h1>
         <article>
           <ul>
@@ -39,7 +38,13 @@
             и Бабарыкинымъ, ругалъ Сержпутовскому и ничего не сдѣлалъ, вотъ 3 упрека, которыя дѣлаю с
             ебѣ за нынѣшній день. (3)
           </p>
-          <a href='group_list.html'>все записи группы</a>
+          <a 
+          {% for post in posts %}
+  <p>{{ post.text }}</p>    
+  <a href="">все записи группы</a>
+  {% if not forloop.last %}<hr>{% endif %}
+{% endfor %} 
+          </a>
         </article>
         <hr>
         <article>
@@ -63,7 +68,12 @@
             накрылъ Крыжановскій, что, признаюсь, было мнѣ не совсѣмъ пріятно. Упрекаю себя за 
             безхарактерность, что не высидѣлъ дома, и зa праздность цѣлаго дня. Это главный пунктъ. (2)
           </p>
-          <a href="group_list.html">все записи группы</a>
+          <a 
+          {% for post in posts %}
+  <p>{{ post.text }}</p>    
+  <a href="">все записи группы</a>
+  {% if not forloop.last %}<hr>{% endif %}
+{% endfor %} 
         </article>
         <hr>
         <article>
@@ -83,7 +93,11 @@
             Гембичомъ, потомъ болталъ съ Шубинымъ и съ Сашей Горчаковымъ. — Исключая праздности, 
             днемъ своимъ очень доволенъ. (1)
           </p>
-          <a href="group_list.html">все записи группы</a>
+          {% for post in posts %}
+  <p>{{ post.text }}</p>    
+  <a href="">все записи группы</a>
+  {% if not forloop.last %}<hr>{% endif %}
+{% endfor %} 
         </article>
         <!-- под последним постом нет линии -->
       </div>  
@@ -91,6 +105,8 @@
     <!-- Использованы классы бустрапа: -->
     <!-- border-top: создаёт тонкую линию сверху блока -->
     <!-- text-center: выравнивает текстовые блоки внутри блока по центру -->
-    <!-- py-3: контент внутри размещается с отступом сверху и снизу -->    
-    {% include 'includes/footer.html' %}     
+    <!-- py-3: контент внутри размещается с отступом сверху и снизу -->         
+    <footer
+      {% include 'includes/footer.html' %}  
+    </footer>
   </body>
