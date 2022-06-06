@@ -1,26 +1,24 @@
 {% extends 'base.html' %} {#Расширяет основной шаблон#}
 {% block title %}
-  <!--Последние обновления на сайте-->
 {% endblock %} 
 {% block content %}
-  <!-- класс py-5 создает отступы сверху и снизу блока -->
   <div class="container py-5">     
     <h1>Последние обновления на сайте</h1>
-    <article>
-      {% for post in posts %}
-  <ul>
-    <li>
-      Автор: {{ post.author.get_full_name }}
-    </li>
-    <li>
-      Дата публикации: {{ post.pub_date|date:"d E Y" }}
-    </li>
-  </ul>
-  <p>{{ post.text }}</p>    
-  {% if post.group %}   
-  <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
-{% endif %} 
-  {% if not forloop.last %}<hr>{% endif %}
-{% endfor %} 
-</article> 
+      <article>
+        {% for post in posts %}
+      <ul>
+      <li>
+        Автор: {{ post.author.get_full_name }}
+      </li>
+      <li>
+        Дата публикации: {{ post.pub_date|date:"d E Y" }}
+      </li>
+      </ul>
+      <p>{{ post.text|linebreaksbr }}</p>    
+        {% if post.group %}   
+          <a href="{% url 'posts:group_list' post.group.slug %}">все записи группы</a>
+        {% endif %} 
+        {% if not forloop.last %}<hr>{% endif %}
+        {% endfor %} 
+      </article> 
 {% endblock %}

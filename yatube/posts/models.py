@@ -11,13 +11,16 @@ class Post(models.Model):
         'Group',
         blank=True, null=True,
         on_delete=models.CASCADE,
-        related_name='group'
+        related_name='group',
     )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='posts'
+        related_name='posts',
     )
+
+    def __str__(self):
+        return self.text
 
 
 class Group(models.Model):

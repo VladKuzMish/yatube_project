@@ -3,6 +3,7 @@ from .models import Post, Group
 
 
 class PostAdmin(admin.ModelAdmin):
+
     list_display = (
         'pk',
         'text',

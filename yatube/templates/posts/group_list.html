@@ -1,9 +1,5 @@
-{% extends 'base.html' %} {#Расширяет основной шаблон#}
-{% block title %}
-  Лев Толстой – зеркало русской революции.
-{% endblock %} 
+{% extends 'base.html' %}
 {% block content %}
-<!-- класс py-5 создает отступы сверху и снизу блока -->
 <div class="container py-5">
   <h1>Лев Толстой – зеркало русской революции.</h1>
   <p>
@@ -27,7 +23,6 @@
       ебѣ за нынѣшній день. (3)
     </p>         
   </article>
-  <hr>
   <article>
     <ul>
       <li>
@@ -55,7 +50,7 @@
     {% for post in posts %}
     <ul>
       <li>
-        Автор: {{ post.author.get_full_name }}
+        Автор: {{ post.author.get_full_name|linebreaksbr }}
       </li>
       <li>
         Дата публикации: {{ post.pub_date|date:"d E Y" }}
@@ -68,6 +63,5 @@
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %}
   </article>
-  <!-- под последним постом нет линии -->
 </div>  
 {% endblock %}
