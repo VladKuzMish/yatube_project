@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% block title %}
-<h1>{{ group.title }}</h1>
-<h3>{{ group.description }}</h3>
+<title> Группы </title>
 {% endblock %} 
 {% block content %}
+<h1>{{ group.title }}</h1>
+<h3>{{ group.description }}</h3>
 <div class="container py-5">
     {% for post in posts %}
     <article>
