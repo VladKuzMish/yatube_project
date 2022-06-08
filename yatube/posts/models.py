@@ -6,7 +6,8 @@ User = get_user_model()
 
 class Post(models.Model):
     """Модель для постов."""
-    text = models.TextField()
+
+    text = models.TextField(max_length=800)
     pub_date = models.DateTimeField(auto_now_add=True)
     group = models.ForeignKey(
         'Group',
@@ -26,9 +27,10 @@ class Post(models.Model):
 
 class Group(models.Model):
     """Модель для групп."""
+
     title = models.CharField('Название', max_length=200)
     description = models.TextField()
-    slug = models.SlugField(max_length=50, unique=True,)
+    slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self) -> str:
         return self.title

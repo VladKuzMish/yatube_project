@@ -16,9 +16,11 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = Post.objects.filter(group=group).order_by('-pub_date')[
-        :VARIABLE_POSTS
-    ]
+    posts = Post.objects.filter(
+        group=group
+    ).order_by(
+        '-pub_date'
+    )[:VARIABLE_POSTS]
     context = {
         'group': group,
         'posts': posts,
