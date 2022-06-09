@@ -3,6 +3,8 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+CONSTRAINT_VARIABLE = 15
+
 
 class Post(models.Model):
     """Модель для постов."""
@@ -22,7 +24,7 @@ class Post(models.Model):
     )
 
     def __str__(self):
-        return self.text
+        return self.text[:CONSTRAINT_VARIABLE]
 
 
 class Group(models.Model):
