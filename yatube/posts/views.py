@@ -1,7 +1,5 @@
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
-from django.shortcuts import render
-from django.views.generic.base import TemplateView
 from django.shortcuts import redirect
 
 from .models import Post, Group, User
@@ -13,13 +11,13 @@ VARIABLE_POSTS = 10
 
 def index(request):
     post_list = Post.objects.all().order_by('-pub_date')
-    paginator = Paginator(post_list, VARIABLE_POSTS) 
+    paginator = Paginator(post_list, VARIABLE_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {
         'page_obj': page_obj,
     }
-    return render(request, 'posts/index.html', context) 
+    return render(request, 'posts/index.html', context)
 
 
 def group_posts(request, slug):
@@ -92,5 +90,5 @@ def post_edit(request, post_id):
             return redirect('post_detail', pk=post.post_id)
     else:
         form = PostForm(instance=post)
-        
+
     return render(request, 'blog/post_edit.html', {'form': form})
