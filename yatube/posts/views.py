@@ -22,14 +22,14 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = Post.objects.filter(
-        group=group
-    ).order_by('-pub_date')[:VARIABLE_POSTS]
+    posts = group.posts.all()[:VARIABLE_POSTS]
+    paginator = Paginator(posts, VARIABLE_POSTS)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     context = {
         'group': group,
-        'posts': posts,
+        'page_obj': page_obj,
     }
-
     return render(request, 'posts/group_list.html', context)
 
 
