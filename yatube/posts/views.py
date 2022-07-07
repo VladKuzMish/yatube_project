@@ -87,7 +87,7 @@ def post_edit(request, post_id):
             post.author = request.user
             post.save()
 
-            return redirect('posts:post_detail', pk=post_id)
+            return redirect('posts:post_detail', post_id=post_id)
     else:
         form = PostForm(instance=post)
 
