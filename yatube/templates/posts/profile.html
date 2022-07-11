@@ -15,7 +15,7 @@
     {% else %}
       {{ author.username }}
     {% endif %} </h1>
-  <h3>Всего постов: {{ posts_count }} </h3>   
+  <h3>Всего постов: {{ author.posts.count }} </h3>   
   {% for post in page_obj %}          
     <article>
       <ul>

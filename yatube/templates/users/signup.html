@@ -6,7 +6,7 @@
       <div class="card">
         <div class="card-header">Зарегистрироваться</div>
           <div class="card-body">
-          {% load user_filters %} {# Загружаем фильтры #}
+          {% load user_filters %} 
               {% if form.errors %}
                   {% for field in form %} 
                     {% for error in field.errors %}            
@@ -24,8 +24,6 @@
 
               <form method="post" action="{% url 'users:signup' %}">
               {% csrf_token %}
-
-              {# Выводим поля в цикле, по отдельности #}
               {% for field in form %} 
                 <div class="form-group row my-3">
                   <label for="{{ field.id_for_label }}">
@@ -34,7 +32,6 @@
                         <span class="required text-danger">*</span>
                       {% endif %}
                   </label>
-                  {# К полю ввода добавляем атрибут class #}
                   {{ field|addclass:'form-control' }} 
                     {% if field.help_text %}
                       <small 
@@ -52,8 +49,8 @@
                 </button>
               </div>
             </form>
-          </div> <!-- card body -->
-        </div> <!-- card -->
-      </div> <!-- col -->
-  </div> <!-- row -->
+          </div> 
+        </div> 
+      </div> 
+  </div> 
 {% endblock %} 
