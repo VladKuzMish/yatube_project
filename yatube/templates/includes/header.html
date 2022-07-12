@@ -23,7 +23,7 @@
     {% endif %}"
      href="{% url 'about:tech' %}">Технологии</a>
     </li>
-     <!-- Проверка: авторизован ли пользователь? --> 
+    {% if user.is_authenticated %}
     <li class="nav-item"> 
       <a class="nav-link
       {% if view_name  == 'posts:post_create' %}
@@ -48,7 +48,7 @@
     <li>
       Пользователь: {{ user.username }}
     </li>
-     
+     {% else %}
     <li class="nav-item"> 
       <a class="nav-link link-light
       {% if view_name  == 'users:login' %}
@@ -65,7 +65,8 @@
     </li>
   </ul>
 </div>
-</nav>         
+</nav>
+{% endif %}        
 </header>
  {% endwith %} 
 

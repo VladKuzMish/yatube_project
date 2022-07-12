@@ -53,10 +53,8 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    group = post.group
     context = {
         'post': post,
-        'group': group,
     }
 
     return render(request, 'posts/post_detail.html', context)
@@ -71,8 +69,8 @@ def post_create(request):
             post.author = request.user
             post.save()
             return redirect('posts:profile', username=post.author)
-    else:
-        form = PostForm()
+
+    form = PostForm()
 
     return render(request, 'posts/create_post.html', {'form': form})
 
@@ -88,7 +86,11 @@ def post_edit(request, post_id):
             post.save()
 
             return redirect('posts:post_detail', post_id=post_id)
-    else:
-        form = PostForm(instance=post)
 
-    return render(request, 'posts/create_post.html', {'form': form})
+    form = PostForm(instance=post),
+
+    return render(request, 'posts/create_post.html', {
+        'form': form,
+        'is_edit': True,
+        'post': post
+        })

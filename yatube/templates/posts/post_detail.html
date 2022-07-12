@@ -33,9 +33,11 @@
     </aside>
     <article class="col-12 col-md-9">
       <p>
-        {{ post.text }}
+        {{ post.text|linebreaksbr }}
       </p>
+      {% if author.is_authenticated %}
     <a class="btn btn-primary" href= "{% url 'posts:post_edit' post.id %}">Редактировать </a>
+    {% endif %}
     </article>
   </div>
 </div> 
