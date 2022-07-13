@@ -23,9 +23,9 @@
         <div class="card-body">
           <form method="POST" class="post-form" 
           {% if is_edit %}
-          action="{% url 'posts:post_edit' post.id %}"
+          action="{% url 'posts:post_edit' post.id %}">
           {% else %}
-          action= "{% url 'posts:post_create' %}">
+          <action= "{% url 'posts:post_create' %}">
           {% endif %}             
             {% csrf_token %}
             <div class="card-body">
