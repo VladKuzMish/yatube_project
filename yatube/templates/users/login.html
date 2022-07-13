@@ -23,7 +23,7 @@
                       </div>
           {% endfor %}
           {% endif %}
-          <form method="post" action="{% url 'posts:index' %}">
+          <form method="post" action="{% url 'users:signup' %}">
           {% csrf_token %}
           {% for field in form %}
           <div class="form-group row my-3"
