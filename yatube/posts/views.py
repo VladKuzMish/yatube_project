@@ -23,7 +23,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    posts = group.posts.all()[:VARIABLE_POSTS]
+    posts = group.posts.all()
     paginator = Paginator(posts, VARIABLE_POSTS)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -68,6 +68,7 @@ def post_create(request):
             post = form.save(commit=False)
             post.author = request.user
             post.save()
+
             return redirect('posts:profile', username=post.author)
 
     form = PostForm()
@@ -92,5 +93,5 @@ def post_edit(request, post_id):
     return render(request, 'posts/create_post.html', {
         'form': form,
         'is_edit': True,
-        'post': post
+        'post': post,
     })

@@ -35,7 +35,7 @@
       <p>
         {{ post.text|linebreaksbr }}
       </p>
-      {% if author.is_authenticated %}
+      {% if user.is_authenticated %}
     <a class="btn btn-primary" href= "{% url 'posts:post_edit' post.id %}">Редактировать </a>
     {% endif %}
     </article>

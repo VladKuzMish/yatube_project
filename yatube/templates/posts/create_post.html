@@ -21,7 +21,13 @@
         </div>
         {% endif %}
         <div class="card-body">
-          <form method="POST" class="post-form">{% csrf_token %}
+          <form method="POST" class="post-form" 
+          {% if is_edit %}
+          action="{% url 'posts:post_create' %}"
+          {% else %}
+          action="{% url 'posts:post_edit' %}">
+          {% endif %}             
+            {% csrf_token %}
             <div class="card-body">
             {% load user_filters %}
             {% if form.errors %}
