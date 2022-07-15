@@ -59,7 +59,7 @@ class PostFormTests(TestCase):
             'username': f'{self.user.username}'
         }))
 
-        self.assertEqual(Post.objects.count(), posts_count+1)
+        self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(
             Post.objects.filter(
                 text='Тестовый текст',
