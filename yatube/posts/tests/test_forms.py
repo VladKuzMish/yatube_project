@@ -58,12 +58,9 @@ class PostFormTests(TestCase):
             follow=True
         )
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
-            'username': f'{self.user.username}'
-            })
+            'username': f'{self.user.username}'})
         )
-
         self.assertEqual(Post.objects.count(), posts_count+1)
-
         self.assertTrue(
             Post.objects.filter(
                 text='Тестовый текст',
