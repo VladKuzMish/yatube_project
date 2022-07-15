@@ -16,7 +16,6 @@ class PostURLTests(TestCase):
         Post.objects.create(
             title='Тестовый заголовок',
             text='Тестовый текст',
-            slug='test-slug'
         )
 
     def setUp(self):
