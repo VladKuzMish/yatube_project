@@ -57,5 +57,7 @@ class PostsURLTests(TestCase):
 
     def test_post_edit_page_with_author(self):
         """Страница редактирования поста доступная автору"""
-        response = self.post_author.get(f'/posts/{self.post.id}/edit', follow=True)
+        response = self.post_author.get(
+            f'/posts/{self.post.id}/edit', follow=True
+        )
         self.assertEqual(response.status_code, 200)
