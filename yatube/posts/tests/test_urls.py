@@ -52,7 +52,7 @@ class PostsURLTests(TestCase):
         }
         for template, address in templates_url_names.items():
             with self.subTest(address=address):
-                response = self.authorized_user.get(address)
+                response = self.user(address)
                 self.assertTemplateUsed(response, template)
 
     def test_post_edit_page_with_author(self):
