@@ -48,11 +48,11 @@ class PostsURLTests(TestCase):
             f'/profile/{self.author}/': 'posts/profile.html',
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
-            f'/posts/{self.post.id}/edit/': 'posts/post_create.html',
+            f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
-                response = self.authorized_user.get(address)
+                response = self.authorized_author.get(address)
                 self.assertTemplateUsed(response, template)
 
     def test_post_edit_page_with_author(self):
