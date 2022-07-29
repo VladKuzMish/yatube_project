@@ -48,7 +48,7 @@ class PostsURLTests(TestCase):
             f'/profile/{self.author}/': 'posts/profile.html',
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
-            f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
+            f'/posts/{self.post.id}/edit/': 'posts/post_create.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
