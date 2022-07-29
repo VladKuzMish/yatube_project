@@ -25,8 +25,8 @@ class PostsURLTests(TestCase):
         cls.author = User.objects.create_user(username='author')
         cls.group = Group.objects.create(
             title='Тестовая группа',
-            slug='test-slug',
             description='Тестовое описание',
+            slug='test-slug',
         )
         cls.post = Post.objects.create(
             author=cls.author,
@@ -52,7 +52,7 @@ class PostsURLTests(TestCase):
         }
         for template, address in templates_url_names.items():
             with self.subTest(address=address):
-                response = self.user(address)
+                response = self.authorized_author.get(address)
                 self.assertTemplateUsed(response, template)
 
     def test_post_edit_page_with_author(self):
