@@ -22,7 +22,7 @@ class StaticURLTests(TestCase):
         cls.group = Group.objects.create(
             title='Тестовая группа',
             description='Тестовое описание',
-            slug='test-slug',            
+            slug='test-slug',
         )
         cls.another_group = Group.objects.create(
             title='Тестовая группа',
