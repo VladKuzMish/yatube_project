@@ -167,14 +167,14 @@ class PaginatorViewsTest(TestCase):
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
-            slug='test-slug',
             description='Тестовое описание',
+            slug='test-slug',
         )
         for i in range(13):
             Post.objects.create(
-                author=cls.user,
                 text=f'{i} тестовый текст',
                 group=cls.group,
+                author=cls.user,
             )
 
     def setUp(self):
