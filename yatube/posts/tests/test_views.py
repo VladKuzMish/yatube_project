@@ -82,7 +82,7 @@ class StaticURLTests(TestCase):
                         kwargs={'slug': self.group.slug})
                         )
                     )
-        self.assertEqual(response.context.get('group', self.group.slug))
+        self.assertEqual(response.context.get('group', self.group.slug), )
 
     def test_profile_page_show_correct_context(self):
         response = (self.authorized_client.
@@ -91,7 +91,7 @@ class StaticURLTests(TestCase):
                         kwargs={'username': self.post.author})
                         )
                     )
-        self.assertEqual(response.context.get('author', self.user))
+        self.assertEqual(response.context.get('author', self.user), )
 
     def test_post_detail_show_correct_context(self):
         response = (self.authorized_client.
@@ -100,7 +100,7 @@ class StaticURLTests(TestCase):
                         kwargs={'post_id': self.post.id})
                         )
                     )
-        self.assertEqual(response.context.get('post', self.post))
+        self.assertEqual(response.context.get('post', self.post), )
 
     def test_post_create_show_correct_context(self):
         response = (self.authorized_client.
