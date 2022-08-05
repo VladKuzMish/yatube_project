@@ -82,7 +82,7 @@ class StaticURLTests(TestCase):
                         kwargs={'slug': self.group.slug})
                         )
                     )
-        self.assertEqual(response.context.get('group'), self.group.slug)
+        self.assertEqual(response.context.get('group'), self.group)
 
     def test_profile_page_show_correct_context(self):
         response = (self.authorized_client.
