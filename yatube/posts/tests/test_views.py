@@ -30,7 +30,7 @@ class StaticURLTests(TestCase):
             slug='test',
         )
         cls.post = Post.objects.create(
-            text='Тестовая пост',
+            text='Тестовый пост',
             group=cls.group,
             author=cls.user,
         )
@@ -75,14 +75,21 @@ class StaticURLTests(TestCase):
         object = response.context['page_obj'][0]
         self.assertEqual(object, self.post)
 
-    def test_group_list_page_show_correct_context(self):
+    def test_group_posts_page_show_correct_context(self):
         response = (self.authorized_client.
                     get(reverse(
                         'posts:group_list',
                         kwargs={'slug': self.group.slug})
                         )
                     )
-        self.assertEqual(response.context.get('group', self.group.slug))
+        form_fields = {
+            'group': forms.fields.CharField,
+            'page_obj': forms.fields.ChoiceField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_fields = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_fields, expected)
 
     def test_profile_page_show_correct_context(self):
         response = (self.authorized_client.
@@ -91,7 +98,14 @@ class StaticURLTests(TestCase):
                         kwargs={'username': self.post.author})
                         )
                     )
-        self.assertEqual(response.context.get('author', self.user))
+        form_fields = {
+            'author': forms.fields.CharField,
+            'page_obj': forms.fields.ChoiceField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_fields = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_fields, expected)
 
     def test_post_detail_show_correct_context(self):
         response = (self.authorized_client.
@@ -100,7 +114,13 @@ class StaticURLTests(TestCase):
                         kwargs={'post_id': self.post.id})
                         )
                     )
-        self.assertEqual(response.context.get('post', self.post))
+        form_fields = {
+            'post': forms.fields.CharField,
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_fields = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_fields, expected)
 
     def test_post_create_show_correct_context(self):
         response = (self.authorized_client.
