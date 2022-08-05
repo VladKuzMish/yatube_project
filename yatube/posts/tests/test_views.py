@@ -95,8 +95,8 @@ class StaticURLTests(TestCase):
     def test_profile_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:profile',
                                               kwargs={
-                                                      'username': 'author'
-                                                      }))
+                                                  'username': 'author'
+                                              }))
         first_object_list = response.context['page_obj'].object_list[0]
         post_text_0 = first_object_list.text
         post_group_0 = first_object_list.group
@@ -114,9 +114,8 @@ class StaticURLTests(TestCase):
     def test_post_detail_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:post_detail',
                                               kwargs={
-                                                      'post_id':
-                                                      self.user.post.id
-                                                      }))
+                                                  'post_id': self.user.post.id
+                                              }))
         first_post = response.context['post']
         post_text = first_post.text
 
