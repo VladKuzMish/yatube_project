@@ -78,7 +78,7 @@ class StaticURLTests(TestCase):
     def test_group_posts_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:group_list',
                                               kwargs={
-                                                'slug': self.group.slug
+                                                  'slug': self.group.slug
                                               }))
         first_object_list = response.context['page_obj'].object_list[0]
         post_text_0 = first_object_list.text
