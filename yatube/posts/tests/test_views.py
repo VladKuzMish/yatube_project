@@ -82,13 +82,7 @@ class StaticURLTests(TestCase):
                         kwargs={'slug': self.group.slug})
                         )
                     )
-        form_fields = {
-            'group': forms.fields.ChoiceField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        self.assertEqual(response.context.get('group'), self.group.slug)
 
     def test_profile_page_show_correct_context(self):
         response = (self.authorized_client.
@@ -97,13 +91,7 @@ class StaticURLTests(TestCase):
                         kwargs={'username': self.post.author})
                         )
                     )
-        form_fields = {
-            'author': forms.fields.CharField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        self.assertEqual(response.context.get('author'), self.user)
 
     def test_post_detail_show_correct_context(self):
         response = (self.authorized_client.
@@ -112,13 +100,7 @@ class StaticURLTests(TestCase):
                         kwargs={'post_id': self.post.id})
                         )
                     )
-        form_fields = {
-            'post': forms.fields.CharField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        self.assertEqual(response.context.get('post'), self.post)
 
     def test_post_create_show_correct_context(self):
         response = (self.authorized_client.
