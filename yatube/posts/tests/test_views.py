@@ -84,7 +84,6 @@ class StaticURLTests(TestCase):
                     )
         form_fields = {
             'group': forms.fields.CharField,
-            'page_obj': forms.fields.ChoiceField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
@@ -100,7 +99,6 @@ class StaticURLTests(TestCase):
                     )
         form_fields = {
             'author': forms.fields.CharField,
-            'page_obj': forms.fields.ChoiceField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
