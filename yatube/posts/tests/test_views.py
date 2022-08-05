@@ -76,49 +76,51 @@ class StaticURLTests(TestCase):
         self.assertEqual(object, self.post)
 
     def test_group_posts_page_show_correct_context(self):
-        response = (self.authorized_client.
-                    get(reverse(
-                        'posts:group_list',
-                        kwargs={'slug': self.group.slug})
-                        )
-                    )
-        form_fields = {
-            'group': forms.fields.CharField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        response = self.authorized_client.get(reverse('posts:group_list',
+                                              kwargs={
+                                                'slug': self.group.slug
+                                              }))
+        first_object_list = response.context['page_obj'].object_list[0]
+        post_text_0 = first_object_list.text
+        post_group_0 = first_object_list.group
+        first_object_list.group.slug = first_object_list.group.slug
+
+        self.assertEqual(post_text_0, self.post.text)
+        self.assertEqual(post_group_0, self.user.post.group)
+        self.assertEqual(
+            first_object_list.group.slug,
+            self.user.group.slug
+        )
 
     def test_profile_page_show_correct_context(self):
-        response = (self.authorized_client.
-                    get(reverse(
-                        'posts:profile',
-                        kwargs={'username': self.post.author})
-                        )
-                    )
-        form_fields = {
-            'author': forms.fields.CharField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        response = self.authorized_client.get(reverse('posts:profile',
+                                              kwargs={
+                                                      'username': 'author'
+                                                      }))
+        first_object_list = response.context['page_obj'].object_list[0]
+        post_text_0 = first_object_list.text
+        post_group_0 = first_object_list.group
+        post_author_0 = first_object_list.author
+        first_object_list.group.slug = first_object_list.group.slug
+
+        self.assertEqual(post_text_0, self.post.text)
+        self.assertEqual(post_group_0, self.user.post.group)
+        self.assertEqual(
+            first_object_list.group.slug,
+            self.user.group.slug
+        )
+        self.assertEqual(post_author_0, self.user.post.author)
 
     def test_post_detail_show_correct_context(self):
-        response = (self.authorized_client.
-                    get(reverse(
-                        'posts:post_detail',
-                        kwargs={'post_id': self.post.id})
-                        )
-                    )
-        form_fields = {
-            'post': forms.fields.CharField,
-        }
-        for value, expected in form_fields.items():
-            with self.subTest(value=value):
-                form_fields = response.context.get('form').fields.get(value)
-                self.assertIsInstance(form_fields, expected)
+        response = self.authorized_client.get(reverse('posts:post_detail',
+                                              kwargs={
+                                                      'post_id':
+                                                      self.user.post.id
+                                                      }))
+        first_post = response.context['post']
+        post_text = first_post.text
+
+        self.assertEqual(post_text, self.post.text)
 
     def test_post_create_show_correct_context(self):
         response = (self.authorized_client.
