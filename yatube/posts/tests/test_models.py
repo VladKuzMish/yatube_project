@@ -21,15 +21,15 @@ class PostModelTest(TestCase):
         )
         cls.post = Post.objects.create(
             author=cls.user,
-            text='Тестовая пост',
+            text='Тут появился тестовый пост',
         )
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
-        models_correct = {self.post: self.post.text[
-            :NUMBER_OF_CHARACTERS
-            ],
-                      PostModelTest.group: PostModelTest.group.title}
+        models_correct = {
+            self.post: self.post.text[:NUMBER_OF_CHARACTERS],
+            PostModelTest.group: PostModelTest.group.title,
+        }
         for correct_option, expected_values in models_correct.items():
             with self.subTest(correct_option=correct_option):
                 self.assertEqual(correct_option.__str__(), expected_values,
