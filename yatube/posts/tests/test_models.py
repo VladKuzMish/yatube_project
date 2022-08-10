@@ -6,6 +6,9 @@ from ..models import Group, Post
 User = get_user_model()
 
 
+NUMBER_OF_CHARACTERS = 15
+
+
 class PostModelTest(TestCase):
     @classmethod
     def setUpClass(cls):
@@ -23,10 +26,12 @@ class PostModelTest(TestCase):
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
-        models_str = {PostModelTest.post: PostModelTest.post.text[:15],
+        models_correct = {self.post: self.post.text[
+            :NUMBER_OF_CHARACTERS
+            ],
                       PostModelTest.group: PostModelTest.group.title}
-        for model, expected_values in models_str.items():
-            with self.subTest(model=model):
-                self.assertEqual(model.__str__(), expected_values,
-                                 f'Ошибка метода _str__ в'
-                                 f' модели {type(model).__name__}')
+        for correct_option, expected_values in models_correct.items():
+            with self.subTest(correct_option=correct_option):
+                self.assertEqual(correct_option.__str__(), expected_values,
+                                 'Ошибка метода _str__ в'
+                                 f'модели {type(correct_option).__name__}')

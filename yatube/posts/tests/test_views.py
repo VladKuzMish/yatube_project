@@ -4,12 +4,12 @@ from django.urls import reverse
 from django import forms
 
 from ..models import Group, Post
+from ..views import VARIABLE_POSTS
 
 User = get_user_model()
 
 
-COUNT_POSTS_LIMIT_1 = 10
-COUNT_POSTS_LIMIT_2 = 3
+COUNT_POSTS_LIMIT = 3
 
 
 class StaticURLTests(TestCase):
@@ -70,7 +70,7 @@ class StaticURLTests(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
-    def test_task_list_page_show_correct_context(self):
+    def test_index_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:index'))
         object = response.context['page_obj'][0]
         self.assertEqual(object, self.post)
@@ -170,7 +170,7 @@ class PaginatorViewsTest(TestCase):
             description='Тестовое описание',
             slug='test-slug',
         )
-        for i in range(13):
+        for i in range(COUNT_POSTS_LIMIT + VARIABLE_POSTS):
             Post.objects.create(
                 text=f'{i} тестовый текст',
                 group=cls.group,
@@ -186,7 +186,7 @@ class PaginatorViewsTest(TestCase):
             len(
                 response.context['page_obj']
             ),
-            COUNT_POSTS_LIMIT_1
+            VARIABLE_POSTS
         )
 
     def test_second_page_contains_three_records(self):
@@ -195,5 +195,49 @@ class PaginatorViewsTest(TestCase):
             len(
                 response.context['page_obj']
             ),
-            COUNT_POSTS_LIMIT_2
+            COUNT_POSTS_LIMIT
+        )
+
+    def test_paginator_group_one(self):
+        response = self.client.get(reverse(
+            'posts:group_list', kwargs={'slug': self.group.slug}
+        ))
+        self.assertEqual(
+            len(
+                response.context['page_obj']
+            ),
+            VARIABLE_POSTS
+        )
+
+    def test_paginator_group_two(self):
+        response = self.client.get(reverse(
+            'posts:group_list', kwargs={'slug': self.group.slug}
+        ) + '?page=2')
+        self.assertEqual(
+            len(
+                response.context['page_obj']
+            ),
+            COUNT_POSTS_LIMIT
+        )
+
+    def test_paginator_profile_one(self):
+        response = self.client.get(reverse(
+            'posts:profile', kwargs={'username': self.user}
+        ))
+        self.assertEqual(
+            len(
+                response.context['page_obj']
+            ),
+            VARIABLE_POSTS
+        )
+
+    def test_paginator_profile_two(self):
+        response = self.client.get(reverse(
+            'posts:profile', kwargs={'username': self.user}
+        ) + '?page=2')
+        self.assertEqual(
+            len(
+                response.context['page_obj']
+            ),
+            COUNT_POSTS_LIMIT
         )

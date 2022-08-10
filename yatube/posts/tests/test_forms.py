@@ -30,7 +30,7 @@ class PostFormTests(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост',
-            group=cls.group
+            group=cls.group,
         )
         cls.form = PostForm()
 
@@ -43,8 +43,8 @@ class PostFormTests(TestCase):
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
 
-    def test_create_post(self):
-        """Валидная форма создает запись в Post."""
+    def test_authorized_user_publish_posts(self):
+        """Авторизованный пользователь может публиковать посты."""
         posts_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый текст',
@@ -53,7 +53,7 @@ class PostFormTests(TestCase):
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
-            follow=True
+            follow=True,
         )
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': f'{self.user.username}'
@@ -61,20 +61,21 @@ class PostFormTests(TestCase):
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(
-            Post.objects.filter(
-                text='Тестовый текст',
-            ).exists()
+            Post.objects.latest(
+                'text',
+            )
         )
 
     def test_cant_create_post_without_text(self):
+        """Тест на проверку невозможности создать пустой пост."""
         posts_count = Post.objects.count()
         form_data = {
-            'text': ''
+            'text': '',
         }
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
-            follow=True
+            follow=True,
         )
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -90,29 +91,31 @@ class PostFormTests(TestCase):
                 'post_id': f'{self.post.id}'
             }),
             data=form_data,
-            follow=True
+            follow=True,
         )
         self.assertRedirects(response, reverse(('posts:post_detail'), kwargs={
-            'post_id': f'{self.post.id}'
+            'post_id': f'{self.post.id}',
         }))
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
             Post.objects.filter(
+                id=self.post.id,
                 text='Тестовый отредактированный текст',
             ).exists()
         )
 
     def test_cant_edit_post_without_text(self):
+        """Тест на проверку невозможности редактирвоания пустого поста."""
         posts_count = Post.objects.count()
         form_data = {
-            'text': ''
+            'text': '',
         }
         response = self.authorized_client.post(
             reverse(('posts:post_edit'), kwargs={
                 'post_id': f'{self.post.id}'
             }),
             data=form_data,
-            follow=True
+            follow=True,
         )
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(response.status_code, HTTPStatus.OK)
