@@ -28,10 +28,10 @@ class PostModelTest(TestCase):
         """Проверяем, что у моделей корректно работает __str__."""
         models_correct = {
             self.post: self.post.text[:NUMBER_OF_CHARACTERS],
-            PostModelTest.group: PostModelTest.group.title,
+            self.group: self.group.title,
         }
         for correct_option, expected_values in models_correct.items():
             with self.subTest(correct_option=correct_option):
-                self.assertEqual(correct_option.__str__(), expected_values,
+                self.assertEqual(str(correct_option), expected_values,
                                  'Ошибка метода _str__ в'
                                  f'модели {type(correct_option).__name__}')

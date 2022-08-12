@@ -18,7 +18,6 @@ class StaticURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             description='Тестовое описание',
@@ -32,7 +31,7 @@ class StaticURLTests(TestCase):
         cls.post = Post.objects.create(
             text='Тестовый пост',
             group=cls.group,
-            author=cls.user,
+            author=User.objects.create_user(username='auth'),
         )
 
     def setUp(self):
@@ -72,8 +71,12 @@ class StaticURLTests(TestCase):
 
     def test_index_page_show_correct_context(self):
         response = self.authorized_client.get(reverse('posts:index'))
-        object = response.context['page_obj'][0]
-        self.assertEqual(object, self.post)
+        post_object = response.context['page_obj'][0]
+        self.assertEqual(post_object, self.post)
+        self.assertEqual(post_object.text, self.post.text)
+        self.assertEqual(post_object.id, self.post.id)
+        self.assertEqual(post_object.author, self.post.author)
+        self.assertEqual(post_object.group, self.group)
 
     def test_group_posts_page_show_correct_context(self):
         response = (self.authorized_client.
@@ -82,7 +85,12 @@ class StaticURLTests(TestCase):
                         kwargs={'slug': self.group.slug})
                         )
                     )
+        group_object = response.context['page_obj'][0]
         self.assertEqual(response.context.get('group'), self.group)
+        self.assertEqual(group_object.text, self.post.text)
+        self.assertEqual(group_object.id, self.post.id)
+        self.assertEqual(group_object.author, self.post.author)
+        self.assertEqual(group_object.group, self.group)
 
     def test_profile_page_show_correct_context(self):
         response = (self.authorized_client.
@@ -91,7 +99,12 @@ class StaticURLTests(TestCase):
                         kwargs={'username': self.post.author})
                         )
                     )
+        profile_object = response.context['page_obj'][0]
         self.assertEqual(response.context.get('author'), self.user)
+        self.assertEqual(profile_object.text, self.post.text)
+        self.assertEqual(profile_object.id, self.post.id)
+        self.assertEqual(profile_object.author, self.post.author)
+        self.assertEqual(profile_object.group, self.group)
 
     def test_post_detail_show_correct_context(self):
         response = (self.authorized_client.
@@ -141,8 +154,9 @@ class StaticURLTests(TestCase):
         for address in project_pages:
             with self.subTest(adress=address):
                 response = self.author_client.get(address)
-                self.assertEqual(
-                    response.context.get('page_obj')[0], self.post
+                self.assertIn(
+                    response.context['page_obj'][0],
+                    Post.objects.all()
                 )
 
     def test_the_post_was_not_included_in_the_group(self):
@@ -176,9 +190,6 @@ class PaginatorViewsTest(TestCase):
                 group=cls.group,
                 author=cls.user,
             )
-
-    def setUp(self):
-        self.client = Client()
 
     def test_first_page_contains_ten_records(self):
         response = self.client.get(reverse('posts:index'))

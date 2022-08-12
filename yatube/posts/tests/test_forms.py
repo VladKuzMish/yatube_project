@@ -30,7 +30,6 @@ class PostFormTests(TestCase):
         cls.post = Post.objects.create(
             author=cls.user,
             text='Тестовый пост',
-            group=cls.group,
         )
         cls.form = PostForm()
 
@@ -60,11 +59,7 @@ class PostFormTests(TestCase):
         }))
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(
-            Post.objects.latest(
-                'text',
-            )
-        )
+        self.assertTrue(Post.objects.order_by('text').first())
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -85,6 +80,7 @@ class PostFormTests(TestCase):
         posts_count = Post.objects.count()
         form_data = {
             'text': 'Тестовый отредактированный текст',
+            'group': self.group.id,
         }
         response = self.authorized_client.post(
             reverse(('posts:post_edit'), kwargs={
@@ -101,6 +97,7 @@ class PostFormTests(TestCase):
             Post.objects.filter(
                 id=self.post.id,
                 text='Тестовый отредактированный текст',
+                group=f'{self.group.id}'
             ).exists()
         )
 

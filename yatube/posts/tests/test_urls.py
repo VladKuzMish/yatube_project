@@ -38,6 +38,8 @@ class PostsURLTests(TestCase):
         self.authorized_user.force_login(self.user)
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
+        self.not_author_client = Client()
+        self.not_author_client.force_login(self.user)
 
     def test_urls_uses_correct_template(self):
         """Проверка корректности использования шаблонов"""
@@ -55,24 +57,24 @@ class PostsURLTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_post_edit_page_with_author(self):
-        """Страница редактирования поста доступная автору"""
+        """Страница редактирования поста доступная автору."""
         response = self.authorized_author.get(
             f'/posts/{self.post.id}/edit', follow=True
         )
         self.assertEqual(response.status_code, 200)
 
     def test_index_available_to_everyone(self):
-        """Главная страница доступна неавторизованному пользователю"""
+        """Главная страница доступна неавторизованному пользователю."""
         response = self.client.get('/')
         self.assertEqual(response.status_code, 200)
 
     def test_group_available_to_everyone(self):
-        """Страница групп доступна неавторизованному пользователю"""
+        """Страница групп доступна неавторизованному пользователю."""
         response = self.client.get('/group/test-slug/')
         self.assertEqual(response.status_code, 200)
 
     def test_profile_available_to_everyone(self):
-        """Страница профайла доступна неавторизованному пользователю"""
+        """Страница профайла доступна неавторизованному пользователю."""
         response = self.client.get(f'/profile/{self.author}/')
         self.assertEqual(response.status_code, 200)
 
@@ -82,22 +84,35 @@ class PostsURLTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_create_available_to_authorized_user(self):
-        """Страница создания поста доступна авторизованному пользователю"""
+        """Страница создания поста доступна авторизованному пользователю."""
         response = self.authorized_user.get('/create/')
         self.assertEqual(response.status_code, 200)
 
     def test_redirect_create(self):
-        """Перенаправление неавторизованного пользователя на страницу логина"""
+        """
+        Перенаправление неавторизованного пользователя на страницу логина.
+        """
         response = self.client.get('/create/', follow=True)
         self.assertRedirects(
             response, '/auth/login/?next=/create/'
         )
 
     def test_redirect_post_edit(self):
-        """Перенаправление неавторизованного пользователя на страницу логина"""
+        """
+        Перенаправление неавторизованного пользователя на страницу логина.
+        """
         response = self.client.get(
             f'/posts/{self.post.id}/edit/', follow=True
         )
         self.assertRedirects(
-            response, '/auth/login/?next=/posts/1/edit/'
+            response, f'/auth/login/?next=/posts/{self.post.id}/edit/'
+        )
+
+    def test_redirect_post_edit_no_author(self):
+        """Перенаправление не автора."""
+        response = self.client.get(
+            f'/posts/{self.post.id}/edit/', follow=True
+        )
+        self.assertRedirects(
+            response, f'/auth/login/?next=/posts/{self.post.id}/edit/'
         )
