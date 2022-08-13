@@ -59,7 +59,8 @@ class PostFormTests(TestCase):
         }))
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(Post.objects.order_by('text').first())
+        self.assertTrue(Post.objects.first())
+        self.assertTrue(Post.objects.all, form_data)
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -93,8 +94,7 @@ class PostFormTests(TestCase):
             'post_id': f'{self.post.id}',
         }))
         self.assertEqual(Post.objects.count(), posts_count)
-        self.assertTrue(
-            Post.objects.filter(
+        self.assertTrue(Post.objects.filter(
                 id=self.post.id,
                 text='Тестовый отредактированный текст',
                 group=f'{self.group.id}'

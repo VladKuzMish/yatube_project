@@ -7,13 +7,6 @@ from posts.models import Post, Group
 User = get_user_model()
 
 
-class StaticURLTests(TestCase):
-    def test_homepage(self):
-        guest_client = self.client
-        response = guest_client.get('/')
-        self.assertEqual(response.status_code, 200)
-
-
 class PostsURLTests(TestCase):
     """Тесты проверки urls.py для приложения posts"""
 
@@ -45,7 +38,7 @@ class PostsURLTests(TestCase):
         """Проверка корректности использования шаблонов"""
         templates_url_names = {
             '/': 'posts/index.html',
-            '/group/test-slug/': 'posts/group_list.html',
+            f'/group/{self.group.slug}/': 'posts/group_list.html',
             f'/profile/{self.author}/': 'posts/profile.html',
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
@@ -70,7 +63,7 @@ class PostsURLTests(TestCase):
 
     def test_group_available_to_everyone(self):
         """Страница групп доступна неавторизованному пользователю."""
-        response = self.client.get('/group/test-slug/')
+        response = self.client.get(f'/group/{self.group.slug}/')
         self.assertEqual(response.status_code, 200)
 
     def test_profile_available_to_everyone(self):
@@ -90,7 +83,8 @@ class PostsURLTests(TestCase):
 
     def test_redirect_create(self):
         """
-        Перенаправление неавторизованного пользователя на страницу логина.
+        Перенаправление неавторизованного пользователя на страницу логина
+        при попытке создать пост.
         """
         response = self.client.get('/create/', follow=True)
         self.assertRedirects(

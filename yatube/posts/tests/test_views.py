@@ -35,10 +35,9 @@ class StaticURLTests(TestCase):
         )
 
     def setUp(self):
-        self.guest_client = Client()
-        self.guest = User.objects.create_user(username='HasNoName')
+        self.client = User.objects.create_user(username='HasNoName')
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.guest)
+        self.authorized_client.force_login(self.client)
         self.user = User.objects.get(username='auth')
         self.author_client = Client()
         self.author_client.force_login(self.user)
@@ -136,12 +135,14 @@ class StaticURLTests(TestCase):
                     )
         form_fields = {
             'text': forms.fields.CharField,
-            'group': forms.fields.ChoiceField
+            'group': forms.fields.ChoiceField,
         }
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_fields = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_fields, expected)
+        self.assertTrue('is_edit')
+        self.assertTrue('post', self.post)
 
     def test_additional_verification_when_creating_a_post(self):
         '''Пост появляется на главной странице сайта,
