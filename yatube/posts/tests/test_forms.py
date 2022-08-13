@@ -94,7 +94,8 @@ class PostFormTests(TestCase):
             'post_id': f'{self.post.id}',
         }))
         self.assertEqual(Post.objects.count(), posts_count)
-        self.assertTrue(Post.objects.filter(
+        self.assertTrue(
+            Post.objects.filter(
                 id=self.post.id,
                 text='Тестовый отредактированный текст',
                 group=f'{self.group.id}',
