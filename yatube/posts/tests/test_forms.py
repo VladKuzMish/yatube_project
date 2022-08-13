@@ -97,7 +97,7 @@ class PostFormTests(TestCase):
         self.assertTrue(Post.objects.filter(
                 id=self.post.id,
                 text='Тестовый отредактированный текст',
-                group=f'{self.group.id}'
+                group=f'{self.group.id}',
             ).exists()
         )
 
