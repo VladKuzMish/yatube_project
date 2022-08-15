@@ -1,12 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from ..models import Group, Post
+from ..models import Group, Post, CONSTRAINT_VARIABLE
 
 User = get_user_model()
-
-
-NUMBER_OF_CHARACTERS = 15
 
 
 class PostModelTest(TestCase):
@@ -27,7 +24,7 @@ class PostModelTest(TestCase):
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
         models_correct = {
-            self.post: self.post.text[:NUMBER_OF_CHARACTERS],
+            self.post: self.post.text[:CONSTRAINT_VARIABLE],
             self.group: self.group.title,
         }
         for correct_option, expected_values in models_correct.items():

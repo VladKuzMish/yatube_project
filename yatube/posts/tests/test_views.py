@@ -35,14 +35,14 @@ class StaticURLTests(TestCase):
         )
 
     def setUp(self):
-        self.client = User.objects.create_user(username='HasNoName')
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.client)
+        self.authorized_client.force_login(self.post.author)
         self.user = User.objects.get(username='auth')
         self.author_client = Client()
         self.author_client.force_login(self.user)
 
     def test_pages_uses_correct_template(self):
+        """Проверка правильности использования шаблонов."""
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
             reverse(
@@ -69,6 +69,7 @@ class StaticURLTests(TestCase):
                 self.assertTemplateUsed(response, template)
 
     def test_index_page_show_correct_context(self):
+        """Провекра корректности контекста главной страницы"""
         response = self.authorized_client.get(reverse('posts:index'))
         post_object = response.context['page_obj'][0]
         self.assertEqual(post_object, self.post)
@@ -78,6 +79,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(post_object.group, self.group)
 
     def test_group_posts_page_show_correct_context(self):
+        """Провекра корректности контекста страницы с группами"""
         response = (self.authorized_client.
                     get(reverse(
                         'posts:group_list',
@@ -92,6 +94,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(group_object.group, self.group)
 
     def test_profile_page_show_correct_context(self):
+        """Провекра корректности контекста страницы профайла."""
         response = (self.authorized_client.
                     get(reverse(
                         'posts:profile',
@@ -106,6 +109,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(profile_object.group, self.group)
 
     def test_post_detail_show_correct_context(self):
+        """Провекра корректности контекста страницы конкретного поста"""
         response = (self.authorized_client.
                     get(reverse(
                         'posts:post_detail',
@@ -115,6 +119,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(response.context.get('post'), self.post)
 
     def test_post_create_show_correct_context(self):
+        """Провекра корректности контекста создания поста"""
         response = (self.authorized_client.
                     get(reverse('posts:post_create')))
         form_fields = {
@@ -127,6 +132,7 @@ class StaticURLTests(TestCase):
                 self.assertIsInstance(form_fields, expected)
 
     def test_post_edit_show_correct_context(self):
+        """Провекра корректности контекста редактирования поста"""
         response = (self.authorized_client.
                     get(reverse(
                         'posts:post_edit',
@@ -141,8 +147,10 @@ class StaticURLTests(TestCase):
             with self.subTest(value=value):
                 form_fields = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_fields, expected)
-        self.assertTrue('is_edit')
-        self.assertTrue('post', self.post)
+                self.assertEqual(
+                    response.context.get('post').text, self.post.text
+                )
+                self.assertTrue(response.context.get('is_edit'))
 
     def test_additional_verification_when_creating_a_post(self):
         '''Пост появляется на главной странице сайта,
@@ -193,6 +201,7 @@ class PaginatorViewsTest(TestCase):
             )
 
     def test_first_page_contains_ten_records(self):
+        """Провекра пагинатора, первая страница."""
         response = self.client.get(reverse('posts:index'))
         self.assertEqual(
             len(
@@ -202,6 +211,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_second_page_contains_three_records(self):
+        """Провекра пагинатора, вторая страница."""
         response = self.client.get(reverse('posts:index') + '?page=2')
         self.assertEqual(
             len(
@@ -211,6 +221,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_paginator_group_one(self):
+        """Провекра пагинатора на странице групп, первая страница."""
         response = self.client.get(reverse(
             'posts:group_list', kwargs={'slug': self.group.slug}
         ))
@@ -222,6 +233,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_paginator_group_two(self):
+        """Провекра пагинатора на странице групп, вторая страница."""
         response = self.client.get(reverse(
             'posts:group_list', kwargs={'slug': self.group.slug}
         ) + '?page=2')
@@ -233,6 +245,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_paginator_profile_one(self):
+        """Провекра пагинатора на странице профайла, первая страница."""
         response = self.client.get(reverse(
             'posts:profile', kwargs={'username': self.user}
         ))
@@ -244,6 +257,7 @@ class PaginatorViewsTest(TestCase):
         )
 
     def test_paginator_profile_two(self):
+        """Провекра пагинатора на странице профайла, вторая страница."""
         response = self.client.get(reverse(
             'posts:profile', kwargs={'username': self.user}
         ) + '?page=2')

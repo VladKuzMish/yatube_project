@@ -32,6 +32,7 @@ class PostFormTests(TestCase):
             text='Тестовый пост',
         )
         cls.form = PostForm()
+        cls.author = cls.user
 
     @classmethod
     def tearDownClass(cls):
@@ -59,8 +60,10 @@ class PostFormTests(TestCase):
         }))
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        self.assertTrue(Post.objects.first())
-        self.assertTrue(Post.objects.all, form_data)
+        last_post = Post.objects.first()
+        self.assertEqual(last_post.author, self.author)
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.group.id, form_data['group'])
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -76,7 +79,7 @@ class PostFormTests(TestCase):
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    def test_edit_post(self):
+    def test_edit_post_for_valid(self):
         """Валидная форма редактирует запись в Post."""
         posts_count = Post.objects.count()
         form_data = {
@@ -97,7 +100,7 @@ class PostFormTests(TestCase):
         self.assertTrue(
             Post.objects.filter(
                 id=self.post.id,
-                text='Тестовый отредактированный текст',
+                text=form_data['text'],
                 group=f'{self.group.id}',
             ).exists()
         )

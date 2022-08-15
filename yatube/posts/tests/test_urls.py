@@ -32,7 +32,6 @@ class PostsURLTests(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
         self.not_author_client = Client()
-        self.not_author_client.force_login(self.user)
 
     def test_urls_uses_correct_template(self):
         """Проверка корректности использования шаблонов"""
@@ -103,10 +102,11 @@ class PostsURLTests(TestCase):
         )
 
     def test_redirect_post_edit_no_author(self):
-        """Перенаправление не автора."""
+        """Перенаправление не автора на строницу поста."""
         response = self.client.get(
             f'/posts/{self.post.id}/edit/', follow=True
         )
         self.assertRedirects(
-            response, f'/auth/login/?next=/posts/{self.post.id}/edit/'
+            response,
+            f'/auth/login/?next=/posts/{self.post.id}/edit/'
         )
