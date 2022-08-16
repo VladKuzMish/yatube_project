@@ -21,18 +21,17 @@ class PostFormTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='HasNoName')
+        cls.author = User.objects.create_user(username='HasNoName')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             slug='test',
             description='Тестовое описание',
         )
         cls.post = Post.objects.create(
-            author=cls.user,
+            author=cls.author,
             text='Тестовый пост',
         )
         cls.form = PostForm()
-        cls.author = cls.user
 
     @classmethod
     def tearDownClass(cls):
@@ -41,7 +40,7 @@ class PostFormTests(TestCase):
 
     def setUp(self):
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.user)
+        self.authorized_client.force_login(self.author)
 
     def test_authorized_user_publish_posts(self):
         """Авторизованный пользователь может публиковать посты."""
@@ -56,7 +55,7 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
-            'username': f'{self.user.username}'
+            'username': f'{self.author.username}'
         }))
 
         self.assertEqual(Post.objects.count(), posts_count + 1)
@@ -113,7 +112,7 @@ class PostFormTests(TestCase):
         }
         response = self.authorized_client.post(
             reverse(('posts:post_edit'), kwargs={
-                'post_id': f'{self.post.id}'
+                'post_id': self.post.id
             }),
             data=form_data,
             follow=True,
