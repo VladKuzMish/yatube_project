@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_page
 
 from .models import Post, Group, User, Follow
-from .forms import CommentAdd, PostForm
+from .forms import CommentForm, PostForm
 
 VARIABLE_POSTS = 10
 
@@ -65,7 +65,7 @@ def profile(request, username):
 def post_detail(request, post_id):
     """Функция страницы поста."""
     post = get_object_or_404(Post, pk=post_id)
-    form = CommentAdd(request.POST or None)
+    form = CommentForm(request.POST or None)
     comments = post.comments.all()
     context = {
         'post': post,
@@ -128,7 +128,7 @@ def post_edit(request, post_id):
 @login_required
 def add_comment(request, post_id):
     """Функция для создания комментария."""
-    form = CommentAdd(request.POST or None)
+    form = CommentForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
