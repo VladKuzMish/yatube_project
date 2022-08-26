@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 from django import forms
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.cache import cache
 
 from ..models import Group, Post
 from ..views import VARIABLE_POSTS
@@ -40,6 +42,21 @@ class StaticURLTests(TestCase):
         self.user = User.objects.get(username='auth')
         self.author_client = Client()
         self.author_client.force_login(self.user)
+        self.image = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        self.uploaded = SimpleUploadedFile(
+            name='image.gif',
+            content=self.image,
+            content_type='image/gif',
+        )
+
+        cache.clear()
 
     def test_pages_uses_correct_template(self):
         """Проверка правильности использования шаблонов."""
@@ -77,6 +94,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(post_object.id, self.post.id)
         self.assertEqual(post_object.author, self.post.author)
         self.assertEqual(post_object.group, self.group)
+        self.assertEqual(post_object.image, self.post.image)
 
     def test_group_posts_page_show_correct_context(self):
         """Провекра корректности контекста страницы с группами"""
@@ -92,6 +110,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(group_object.id, self.post.id)
         self.assertEqual(group_object.author, self.post.author)
         self.assertEqual(group_object.group, self.group)
+        self.assertEqual(group_object.image, self.post.image)
 
     def test_profile_page_show_correct_context(self):
         """Провекра корректности контекста страницы профайла."""
@@ -107,6 +126,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(profile_object.id, self.post.id)
         self.assertEqual(profile_object.author, self.post.author)
         self.assertEqual(profile_object.group, self.group)
+        self.assertEqual(profile_object.image, self.post.image)
 
     def test_post_detail_show_correct_context(self):
         """Провекра корректности контекста страницы конкретного поста"""
@@ -180,6 +200,24 @@ class StaticURLTests(TestCase):
         )
         self.assertNotIn(self.post, response.context['page_obj'])
 
+    def test_cach_in_index_page(self):
+        """Проверяем кеширование главной страницы."""
+        response = self.authorized_client.get(reverse('posts:index'))
+        with_cache = response.content
+
+        Post.objects.create(
+            group=self.group,
+            text='Новый текст, после кэша',
+            author=self.user,
+        )
+
+        cache.clear()
+
+        response = self.authorized_client.get(reverse('posts:index'))
+        after_clearing_the_cache = response.content
+        self.assertNotEqual(with_cache,
+                            after_clearing_the_cache)
+
 
 class PaginatorViewsTest(TestCase):
     '''Класс для тестирования пагинатора'''
@@ -199,6 +237,8 @@ class PaginatorViewsTest(TestCase):
                 group=cls.group,
                 author=cls.user,
             )
+
+            cache.clear()
 
     def test_first_page_contains_ten_records(self):
         """Провекра пагинатора, первая страница."""

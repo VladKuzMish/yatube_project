@@ -1,8 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
+from django.core.cache import cache
 
 from posts.models import Post, Group
-
 
 User = get_user_model()
 
@@ -32,6 +32,8 @@ class PostsURLTests(TestCase):
         self.authorized_author = Client()
         self.authorized_author.force_login(self.author)
 
+        cache.clear()
+
     def test_urls_uses_correct_template(self):
         """Проверка корректности использования шаблонов"""
         templates_url_names = {
@@ -41,6 +43,7 @@ class PostsURLTests(TestCase):
             f'/posts/{self.post.id}/': 'posts/post_detail.html',
             '/create/': 'posts/create_post.html',
             f'/posts/{self.post.id}/edit/': 'posts/create_post.html',
+            '/page_not_exist/': 'core/404.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):

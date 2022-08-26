@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth import get_user_model
 
+from core.models import CreatedModel
+
 User = get_user_model()
 
 CONSTRAINT_VARIABLE = 15
@@ -22,6 +24,11 @@ class Post(models.Model):
         on_delete=models.CASCADE,
         related_name='posts',
     )
+    image = models.ImageField(
+        'Картинка',
+        upload_to='posts/',
+        blank=True
+    )
 
     class Meta:
         ordering = ('-pub_date',)
@@ -39,3 +46,47 @@ class Group(models.Model):
 
     def __str__(self) -> str:
         return self.title
+
+
+class Comment(CreatedModel):
+    """Модель для создания комментариев."""
+
+    post = models.ForeignKey(
+        Post,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments',
+    )
+    text = text = models.TextField(max_length=500)
+
+    class Meta:
+        ordering = (
+            'created',
+        )
+
+
+class Follow(models.Model):
+    """Модель для подписки на авторов."""
+
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='follower',
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='following',
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_follow')]
+        verbose_name = 'Подписка',
+        verbose_name_plural = 'Подписки'

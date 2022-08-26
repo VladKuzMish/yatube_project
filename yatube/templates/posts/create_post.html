@@ -21,7 +21,7 @@
         </div>
         {% endif %}
         <div class="card-body">
-          <form method="POST" class="post-form" 
+          <form method="POST" class="post-form" enctype="multipart/form-data"
           {% if is_edit %}
           action="{% url 'posts:post_edit' post.id %}">
           {% else %}
@@ -75,7 +75,6 @@
               </div>
             </form>
           </div> 
-   
           </form>
         </div>
       </div>
