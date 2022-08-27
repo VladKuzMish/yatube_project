@@ -11,9 +11,9 @@ class PostForm(forms.ModelForm):
         labels = {'text': 'Текст', 'group': 'Группа'}
 
 
-class CommentAdd(forms.ModelForm):
+class CommentForm(forms.ModelForm):
 
     class Meta:
         model = Comment
-        fields = ('post', 'author', 'text')
-        labels = {'post': 'Пост', 'author': 'Автор', 'text': 'Текст'}
+        fields = ('text',)
+        labels = {'text': 'Текст',}
