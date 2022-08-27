@@ -80,7 +80,7 @@ def post_detail(request, post_id):
 def post_create(request):
     """Функция страницы создания поста."""
     if request.method == "POST":
-        form = PostForm(
+        form = CommentAdd(
             request.POST or None,
             files=request.FILES or None,
         )
@@ -128,7 +128,7 @@ def post_edit(request, post_id):
 @login_required
 def add_comment(request, post_id):
     """Функция для создания комментария."""
-    form = CommentAdd(request.POST or None)
+    form = PostForm(request.POST or None)
     if form.is_valid():
         comment = form.save(commit=False)
         comment.author = request.user
@@ -140,8 +140,7 @@ def add_comment(request, post_id):
 @login_required
 def follow_index(request):
     """Главная функция подписок."""
-    follow = Follow.objects.filter(user=request.user)
-    post_list = Post.objects.filter(author=follow.author)
+    post_list = Post.objects.filter(author__following__user=request.user)
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
