@@ -80,7 +80,7 @@ def post_detail(request, post_id):
 def post_create(request):
     """Функция страницы создания поста."""
     if request.method == "POST":
-        form = CommentAdd(
+        form = PostForm(
             request.POST or None,
             files=request.FILES or None,
         )
@@ -100,9 +100,8 @@ def post_create(request):
 def post_edit(request, post_id):
     """Функция страницы редактирования поста."""
     post = get_object_or_404(Post, pk=post_id)
-    if request.method == 'GET':
-        if request.user != post.author:
-            return redirect('posts:post_detail', post_id=post.id)
+    if request.user != post.author:
+        return redirect('posts:post_detail', post_id=post.id)
     if request.method == "POST":
         form = PostForm(
             request.POST or None,
