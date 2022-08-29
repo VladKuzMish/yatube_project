@@ -23,7 +23,7 @@
             Автор: {{ post.author.get_full_name }}
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center">
-            Всего постов автора:  <span>{{ post.author.count }}</span>
+            Всего постов автора:  <span>{{ author.post.count }}</span>
           </li>
           <li class="list-group-item">
           <a href="{% url 'posts:profile' post.author.username %}">
@@ -39,7 +39,7 @@
       {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
             <img class="card-img my-2" src="{{ im.url }}">
           {% endthumbnail %}
-      {% include 'utilits/comments.html' %}
+      {% include 'posts/includes/comments.html' %}
      {% if user == post.author %} 
     <a class="btn btn-primary" href= "{% url 'posts:post_edit' post.id %}">Редактировать </a>
     {% endif %}

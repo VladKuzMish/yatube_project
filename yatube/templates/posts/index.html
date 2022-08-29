@@ -4,7 +4,7 @@
   <title>Последние обновления на сайте</title>
 {% endblock title %}  
 {% block content %}
-{% include 'includes/switcher.html' %}
+{% include 'posts/includes/switcher.html' %}
   <center><h1>Yatube - сайт, который мы не заслуживаем</h1></center>
   <div class="container py-5">
       {% for post in page_obj %}
@@ -28,5 +28,5 @@
           {% endif %}
       </article>
       {% endfor %}
-      {% include 'includes/paginator.html' %}
+      {% include 'posts/includes/paginator.html' %}
 {% endblock %}

@@ -4,7 +4,7 @@
   <title>Все посты</title>
 {% endblock title %}    
 {% block content %}
-{% include 'includes/switcher.html' %}
+{% include 'posts/includes/switcher.html' %}
   <div class="container py-5"> 
       {% for post in page_obj %}
       {% if not forloop.last %}<hr>{% endif %}

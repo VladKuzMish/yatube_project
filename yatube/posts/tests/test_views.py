@@ -5,13 +5,10 @@ from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 
-from ..models import Group, Post
-from ..views import VARIABLE_POSTS
+from ..models import Group, Post, Follow
+from ..contstants import VARIABLE_POSTS, COUNT_POSTS_LIMIT, NAME_USERS
 
 User = get_user_model()
-
-
-COUNT_POSTS_LIMIT = 3
 
 
 class StaticURLTests(TestCase):
@@ -167,10 +164,12 @@ class StaticURLTests(TestCase):
             with self.subTest(value=value):
                 form_fields = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_fields, expected)
-                self.assertEqual(
-                    response.context.get('post').text, self.post.text
-                )
-                self.assertTrue(response.context.get('is_edit'))
+
+            self.assertEqual(
+                response.context.get('post').text, self.post.text
+            )
+            self.assertTrue(response.context.get('is_edit'))
+            self.assertEqual(response.context.get('is_edit'), True)
 
     def test_additional_verification_when_creating_a_post(self):
         '''Пост появляется на главной странице сайта,
@@ -307,3 +306,54 @@ class PaginatorViewsTest(TestCase):
             ),
             COUNT_POSTS_LIMIT
         )
+
+
+class FollowViewsTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.author = User.objects.create_user(username=NAME_USERS[0])
+        cls.user = User.objects.create_user(username=NAME_USERS[1])
+
+    def setUp(self):
+        cache.clear()
+        self.author_client = Client()
+        self.author_client.force_login(self.author)
+        self.user_client = Client()
+        self.user_client.force_login(self.user)
+
+    def test_follow_on_user(self):
+        """Проверка подписки на пользователя."""
+        count_follow = Follow.objects.count()
+        self.user_client.post(
+            reverse('posts:profile_follow', kwargs={'username': self.author})
+        )
+        follow = Follow.objects.all().latest('id')
+        self.assertEqual(Follow.objects.count(), count_follow + 1)
+        self.assertEqual(follow.author_id, self.author.id)
+        self.assertEqual(follow.user_id, self.user.id)
+
+    def test_unfollow_on_user(self):
+        """Проверка отписки от пользователя."""
+        Follow.objects.create(
+            user=self.user,
+            author=self.author
+        )
+        count_follow = Follow.objects.count()
+        is_follow = Follow.objects.filter(
+            user=self.user,
+            author=self.author
+        ).exists()
+
+        if is_follow:
+            self.user_client.post(
+                reverse('posts:profile_unfollow',
+                        kwargs={'username': self.author})
+            )
+            self.assertEqual(Follow.objects.count(), count_follow - 1)
+
+        response = self.user_client.post(
+            reverse('posts:profile_unfollow', kwargs={'username': self.author})
+        )
+
+        self.assertEqual(response.status_code, 302)

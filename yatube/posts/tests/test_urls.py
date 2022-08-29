@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.core.cache import cache
@@ -55,32 +57,32 @@ class PostsURLTests(TestCase):
         response = self.authorized_author.get(
             f'/posts/{self.post.id}/edit', follow=True
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_index_available_to_everyone(self):
         """Главная страница доступна неавторизованному пользователю."""
         response = self.client.get('/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_group_available_to_everyone(self):
         """Страница групп доступна неавторизованному пользователю."""
         response = self.client.get(f'/group/{self.group.slug}/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile_available_to_everyone(self):
         """Страница профайла доступна неавторизованному пользователю."""
         response = self.client.get(f'/profile/{self.author}/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_id_available_to_author(self):
         """Страница поста доступна автору"""
         response = self.authorized_author.get(f'/posts/{self.post.id}/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_available_to_authorized_user(self):
         """Страница создания поста доступна авторизованному пользователю."""
         response = self.authorized_user.get('/create/')
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_redirect_create(self):
         """

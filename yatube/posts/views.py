@@ -6,8 +6,7 @@ from django.views.decorators.cache import cache_page
 
 from .models import Post, Group, User, Follow
 from .forms import CommentForm, PostForm
-
-VARIABLE_POSTS = 10
+from .contstants import VARIABLE_POSTS
 
 
 @cache_page(20)
@@ -102,6 +101,7 @@ def post_edit(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
     if request.user != post.author:
         return redirect('posts:post_detail', post_id=post.id)
+
     if request.method == "POST":
         form = PostForm(
             request.POST or None,
@@ -134,6 +134,7 @@ def add_comment(request, post_id):
         comment.author = request.user
         comment.post = post
         comment.save()
+
     return redirect('posts:post_detail', post_id=post_id)
 
 
@@ -155,9 +156,8 @@ def follow_index(request):
 def profile_follow(request, username):
     """Функция для подписки на автора"""
     author = get_object_or_404(User, username=username)
-    currently_user = request.user
-    if currently_user != author:
-        Follow.objects.get_or_create(user=currently_user, author=author)
+    if request.user != author:
+        Follow.objects.get_or_create(user=request.user, author=author)
     return redirect('posts:profile', username=username)
 
 
@@ -165,6 +165,5 @@ def profile_follow(request, username):
 def profile_unfollow(request, username):
     """Функция для отписки от автора"""
     author = get_object_or_404(User, username=username)
-    currently_user = request.user
-    Follow.objects.filter(user=currently_user, author=author).delete()
+    Follow.objects.filter(user=request.user, author=author).delete()
     return redirect('posts:profile', username=username)

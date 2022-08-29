@@ -64,9 +64,7 @@ class Comment(CreatedModel):
     text = text = models.TextField(max_length=500)
 
     class Meta:
-        ordering = (
-            'created',
-        )
+        ordering = ('created',)
 
 
 class Follow(models.Model):
