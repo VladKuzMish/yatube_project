@@ -5,8 +5,8 @@
 {% endblock title %}    
 {% block content %}
 {% include 'posts/includes/switcher.html' %}
-  <div class="container py-5"> 
-      {% for post in page_obj %}
+  <h1><div class="container py-5">
+      {% for post in page_obj %}</h1>
       {% if not forloop.last %}<hr>{% endif %}
       <article>
         <ul>

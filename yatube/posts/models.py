@@ -2,10 +2,9 @@ from django.db import models
 from django.contrib.auth import get_user_model
 
 from core.models import CreatedModel
+from .contstants import CONSTRAINT_VARIABLE
 
 User = get_user_model()
-
-CONSTRAINT_VARIABLE = 15
 
 
 class Post(models.Model):
@@ -61,7 +60,7 @@ class Comment(CreatedModel):
         on_delete=models.CASCADE,
         related_name='comments',
     )
-    text = text = models.TextField(max_length=500)
+    text = models.TextField(max_length=500)
 
     class Meta:
         ordering = ('created',)

@@ -30,8 +30,7 @@
             {% csrf_token %}
             <div class="card-body">
             {% load user_filters %}
-            {% include 'utilits/form_errors.html' %}
-              <form method="post" action="{% url 'users:signup' %}">
+            {% include 'posts/includes/form_errors.html' %}
               {% csrf_token %}
               {% for field in form %} 
                 <div class="form-group row my-3">

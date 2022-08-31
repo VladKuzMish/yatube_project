@@ -61,26 +61,42 @@ class PostFormTests(TestCase):
             content_type='image/gif'
         )
         posts_count = Post.objects.count()
+        posts_before = set(Post.objects.all())
+
+        new_post = Post.objects.create(
+            author=self.author,
+            text='Тестовый пост',
+            group=self.group,
+            image=uploaded
+        )
+
+        post_count_add = Post.objects.count()
+        post_after = Post.objects.all()
+
         form_data = {
-            'text': 'Тестовый текст',
+            'text': new_post.text,
             'group': self.group.id,
             'image': uploaded
         }
+
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
-            follow=True,
         )
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': self.author.username
         }))
+        self.assertEqual(post_count_add, posts_count + 1)
 
-        self.assertEqual(Post.objects.count(), posts_count + 1)
-        last_post = Post.objects.first()
-        self.assertEqual(last_post.author, self.author)
-        self.assertEqual(last_post.text, form_data['text'])
-        self.assertEqual(last_post.group.id, form_data['group'])
-        self.assertEqual(last_post.image, f'posts/{uploaded.name}')
+        last_post = (set(post_after) - set(posts_before)).pop()
+
+        self.assertTrue(
+            Comment.objects.filter(
+                group=self.group,
+                text=last_post.text,
+                image=f'posts/{uploaded.name}',
+            ).exists()
+        )
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -105,7 +121,7 @@ class PostFormTests(TestCase):
         }
         response = self.authorized_client.post(
             reverse(('posts:post_edit'), kwargs={
-                'post_id': f'{self.post.id}'
+                'post_id': self.post.id
             }),
             data=form_data,
             follow=True,
@@ -148,25 +164,49 @@ class PostFormTests(TestCase):
 
     def test_post_comment(self):
         """Валидная форма создаёт комментарий к посту."""
-        form_data = {
+        comment_count = Comment.objects.count()
+        comment_before = set(Comment.objects.all())
+
+        comment_2 = Comment.objects.create(
+            post=self.post,
+            author=self.author,
+            text='Тестовый комментарий',
+        )
+
+        comment_count_add = Comment.objects.count()
+        comment_after = Comment.objects.all()
+
+        form_fields = {
             'author': self.author,
-            'text': 'Тестовый комментарий',
+            'text': comment_2.text,
             'post_id': self.post.id,
         }
-        response = self.authorized_client.post(
-            reverse('posts:add_comment', kwargs={
-                    'post_id': self.post.id
-                    }),
-            data=form_data,
+        response = self.authorized_client.get(
+            reverse('posts:add_comment',
+                    kwargs={'post_id': self.post.id}
+                    ),
+            data=form_fields,
             follow=True
         )
-        self.assertRedirects(response, reverse('posts:post_detail', kwargs={
-            'post_id': self.post.id
-        }))
+        self.assertRedirects(
+            response,
+            reverse(
+                ('posts:post_detail'),
+                kwargs={'post_id': self.post.id}
+            )
+        )
+
+        self.assertEqual(
+            comment_count_add,
+            comment_count + 1,
+        )
+
+        last_comment = (set(comment_after) - set(comment_before)).pop()
+
         self.assertTrue(
             Comment.objects.filter(
                 author=self.author,
-                text='Тестовый комментарий',
+                text=last_comment.text,
                 post_id=self.post.id,
             ).exists()
         )

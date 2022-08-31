@@ -1,14 +1,11 @@
-from django.contrib.auth import get_user_model
 from django.test import TestCase, Client
 from django.urls import reverse
 from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 
-from ..models import Group, Post, Follow
+from ..models import Group, Post, Follow, User
 from ..contstants import VARIABLE_POSTS, COUNT_POSTS_LIMIT, NAME_USERS
-
-User = get_user_model()
 
 
 class StaticURLTests(TestCase):
@@ -164,12 +161,11 @@ class StaticURLTests(TestCase):
             with self.subTest(value=value):
                 form_fields = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_fields, expected)
-
-            self.assertEqual(
-                response.context.get('post').text, self.post.text
-            )
-            self.assertTrue(response.context.get('is_edit'))
-            self.assertEqual(response.context.get('is_edit'), True)
+                self.assertEqual(
+                    response.context.get('post').text, self.post.text
+                )
+                self.assertTrue(response.context.get('is_edit'))
+                self.assertEqual(response.context.get('is_edit'), True)
 
     def test_additional_verification_when_creating_a_post(self):
         '''Пост появляется на главной странице сайта,

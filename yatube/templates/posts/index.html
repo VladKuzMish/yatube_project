@@ -7,26 +7,6 @@
 {% include 'posts/includes/switcher.html' %}
   <center><h1>Yatube - сайт, который мы не заслуживаем</h1></center>
   <div class="container py-5">
-      {% for post in page_obj %}
-      {% if not forloop.last %}<hr>{% endif %}
-      <article>
-        <ul>
-          <li>
-              Автор: {{ post.author.get_full_name }} 
-          </li>
-          <li>
-              Дата публикации: {{ post.pub_date|date:"d E Y" }}
-          </li>
-        </ul>
-          <p>{{ post.text|linebreaksbr }}</p>
-          {% thumbnail post.image "960x339" crop="center" upscale=True as im %}
-            <img class="card-img my-2" src="{{ im.url }}">
-          {% endthumbnail %}
-          <a href="{% url 'posts:post_detail' post.id %}">Подробная информация</a>    
-          {% if post.group %}   
-            <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
-          {% endif %}
-      </article>
-      {% endfor %}
+      {%include 'posts/includes/posts_card.html'%}
       {% include 'posts/includes/paginator.html' %}
 {% endblock %}

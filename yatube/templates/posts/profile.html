@@ -17,6 +17,8 @@
       {{ author.username }}
     {% endif %} </h1>
   <h3>Всего постов: {{ author.posts.count }} </h3>
+  <h3>Всего подписчиков: {{ author.following.count }} </h3>
+  <h3>Всего подписок: {{ author.follower.count }} </h3>
   {% if following %}
     <a
       class="btn btn-lg btn-light"
