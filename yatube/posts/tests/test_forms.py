@@ -61,42 +61,25 @@ class PostFormTests(TestCase):
             content_type='image/gif'
         )
         posts_count = Post.objects.count()
-        posts_before = set(Post.objects.all())
-
-        new_post = Post.objects.create(
-            author=self.author,
-            text='Тестовый пост',
-            group=self.group,
-            image=uploaded
-        )
-
-        post_count_add = Post.objects.count()
-        post_after = Post.objects.all()
-
         form_data = {
-            'text': new_post.text,
+            'text': 'Тестовый текст',
             'group': self.group.id,
             'image': uploaded
         }
-
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
+            follow=True,
         )
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': self.author.username
         }))
-        self.assertEqual(post_count_add, posts_count + 1)
-
-        last_post = (set(post_after) - set(posts_before)).pop()
-
-        self.assertTrue(
-            Comment.objects.filter(
-                group=self.group,
-                text=last_post.text,
-                image=f'posts/{uploaded.name}',
-            ).exists()
-        )
+        self.assertEqual(Post.objects.count(), posts_count + 1)
+        last_post = Post.objects.first()
+        self.assertEqual(last_post.author, self.author)
+        self.assertEqual(last_post.text, form_data['text'])
+        self.assertEqual(last_post.group.id, form_data['group'])
+        self.assertEqual(last_post.image, f'posts/{uploaded.name}')
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""

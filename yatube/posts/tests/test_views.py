@@ -52,6 +52,27 @@ class StaticURLTests(TestCase):
 
         cache.clear()
 
+    def atributs_posts(self, response, post, url):
+        response = response.get(url)
+        if url == reverse(
+            'posts:post_detail',
+                kwargs={'post_id': self.post.id}):
+            post_in_response = response.context['post']
+        else:
+            post_in_response = response.context['page_obj'][0]
+
+        post_attr = {
+            post.text: post_in_response.text,
+            post.id: post_in_response.id,
+            post.group: post_in_response.group,
+            post.author: post_in_response.author,
+            post.image: post_in_response.image
+        }
+
+        for attr1, attr2 in post_attr.items():
+            with self.subTest(attr1=attr1):
+                self.assertAlmostEqual(attr1, attr2)
+
     def test_pages_uses_correct_template(self):
         """Проверка правильности использования шаблонов."""
         templates_pages_names = {
@@ -81,46 +102,34 @@ class StaticURLTests(TestCase):
 
     def test_index_page_show_correct_context(self):
         """Провекра корректности контекста главной страницы"""
-        response = self.authorized_client.get(reverse('posts:index'))
-        post_object = response.context['page_obj'][0]
-        self.assertEqual(post_object, self.post)
-        self.assertEqual(post_object.text, self.post.text)
-        self.assertEqual(post_object.id, self.post.id)
-        self.assertEqual(post_object.author, self.post.author)
-        self.assertEqual(post_object.group, self.group)
-        self.assertEqual(post_object.image, self.post.image)
+        response = self.authorized_client
+        url = reverse('posts:index')
+        post = self.post
+        return self.atributs_posts(response, post, url)
 
     def test_group_posts_page_show_correct_context(self):
         """Провекра корректности контекста страницы с группами"""
-        response = (self.authorized_client.
-                    get(reverse(
-                        'posts:group_list',
-                        kwargs={'slug': self.group.slug})
-                        )
-                    )
-        group_object = response.context['page_obj'][0]
-        self.assertEqual(response.context.get('group'), self.group)
-        self.assertEqual(group_object.text, self.post.text)
-        self.assertEqual(group_object.id, self.post.id)
-        self.assertEqual(group_object.author, self.post.author)
-        self.assertEqual(group_object.group, self.group)
-        self.assertEqual(group_object.image, self.post.image)
+        response = self.authorized_client.get(
+            reverse('posts:group_list', kwargs={'slug': f'{self.group.slug}'}))
+        post = response.context['page_obj'][0]
+        group = response.context['group']
+
+        self.assertEqual(group, self.group)
+        response = self.authorized_client
+        url = reverse(
+            'posts:group_list',
+            kwargs={'slug': f'{self.group.slug}'})
+        post = self.post
+
+        return self.atributs_posts(response, post, url)
 
     def test_profile_page_show_correct_context(self):
         """Провекра корректности контекста страницы профайла."""
-        response = (self.authorized_client.
-                    get(reverse(
-                        'posts:profile',
-                        kwargs={'username': self.post.author})
-                        )
-                    )
-        profile_object = response.context['page_obj'][0]
-        self.assertEqual(response.context.get('author'), self.user)
-        self.assertEqual(profile_object.text, self.post.text)
-        self.assertEqual(profile_object.id, self.post.id)
-        self.assertEqual(profile_object.author, self.post.author)
-        self.assertEqual(profile_object.group, self.group)
-        self.assertEqual(profile_object.image, self.post.image)
+        response = self.authorized_client
+        url = reverse('posts:profile', kwargs={'username': self.post.author})
+        post = self.post
+
+        return self.atributs_posts(response, post, url)
 
     def test_post_detail_show_correct_context(self):
         """Провекра корректности контекста страницы конкретного поста"""
@@ -178,9 +187,8 @@ class StaticURLTests(TestCase):
         for address in project_pages:
             with self.subTest(adress=address):
                 response = self.author_client.get(address)
-                self.assertIn(
-                    response.context['page_obj'][0],
-                    Post.objects.all()
+                self.assertEqual(
+                    response.context.get('page_obj')[0], self.post
                 )
 
     def test_the_post_was_not_included_in_the_group(self):
@@ -220,88 +228,94 @@ class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.user = User.objects.create_user(username='auth')
+        cls.user = User.objects.create_user(username='author_test')
         cls.group = Group.objects.create(
             title='Тестовая группа',
+            slug='testos-slug',
             description='Тестовое описание',
-            slug='test-slug',
         )
-        for i in range(COUNT_POSTS_LIMIT + VARIABLE_POSTS):
-            Post.objects.create(
-                text=f'{i} тестовый текст',
-                group=cls.group,
-                author=cls.user,
+        heap_of_posts = []
+        for i in range(VARIABLE_POSTS + COUNT_POSTS_LIMIT):
+            heap_of_posts.append(
+                Post(
+                    author=cls.user,
+                    text=f'{i} тестовый текст',
+                    group=cls.group,
+                )
             )
+        Post.objects.bulk_create(heap_of_posts)
 
-            cache.clear()
+    def setUp(self):
+        self.guest = User.objects.create_user(username='NoName')
+        self.authorized_client = Client()
+        self.authorized_client.force_login(self.guest)
+        self.user = User.objects.get(username='author_test')
+        self.author_client = Client()
+        self.author_client.force_login(self.user)
 
-    def test_first_page_contains_ten_records(self):
-        """Провекра пагинатора, первая страница."""
-        response = self.client.get(reverse('posts:index'))
-        self.assertEqual(
-            len(
-                response.context['page_obj']
+        cache.clear()
+
+    def test_pages_contains_ten_records(self):
+        '''
+        количество постов:
+        на первой странице,
+        на странице группы
+        на странице профиля
+        равно количеству указанному в константе COUNT_POSTS_LIMIT_1
+        в test/constants.py
+        '''
+        template_response = [
+            self.authorized_client.get(reverse('posts:index')),
+            self.authorized_client.get(
+                reverse('posts:group_list', kwargs={'slug': self.group.slug})
             ),
-            VARIABLE_POSTS
-        )
-
-    def test_second_page_contains_three_records(self):
-        """Провекра пагинатора, вторая страница."""
-        response = self.client.get(reverse('posts:index') + '?page=2')
-        self.assertEqual(
-            len(
-                response.context['page_obj']
+            self.authorized_client.get(
+                reverse('posts:profile', kwargs={'username': self.user})
             ),
-            COUNT_POSTS_LIMIT
-        )
+        ]
 
-    def test_paginator_group_one(self):
-        """Провекра пагинатора на странице групп, первая страница."""
-        response = self.client.get(reverse(
-            'posts:group_list', kwargs={'slug': self.group.slug}
-        ))
-        self.assertEqual(
-            len(
-                response.context['page_obj']
-            ),
-            VARIABLE_POSTS
-        )
+        for resp in template_response:
+            with self.subTest(resp=resp):
+                if self.authorized_client:
+                    response = resp
+                    self.assertEqual(
+                        len(
+                            response.context['page_obj']
+                        ),
+                        VARIABLE_POSTS,
+                    )
 
-    def test_paginator_group_two(self):
-        """Провекра пагинатора на странице групп, вторая страница."""
-        response = self.client.get(reverse(
-            'posts:group_list', kwargs={'slug': self.group.slug}
-        ) + '?page=2')
-        self.assertEqual(
-            len(
-                response.context['page_obj']
+    def test_pages_contains_tree_records(self):
+        '''
+        количество постов:
+        на второй странице,
+        на второй странице группы,
+        на второй странице профиля
+        равно количеству указанному в константе COUNT_POSTS_LIMIT_1
+        в test/constants.py
+        '''
+        template_response = [
+            self.client.get(reverse('posts:index') + '?page=2'),
+            self.authorized_client.get(
+                reverse('posts:group_list', kwargs={'slug': self.group.slug})
+                + '?page=2'
             ),
-            COUNT_POSTS_LIMIT
-        )
+            self.authorized_client.get(
+                reverse('posts:profile', kwargs={'username': self.user})
+                + '?page=2'
+            )
+        ]
 
-    def test_paginator_profile_one(self):
-        """Провекра пагинатора на странице профайла, первая страница."""
-        response = self.client.get(reverse(
-            'posts:profile', kwargs={'username': self.user}
-        ))
-        self.assertEqual(
-            len(
-                response.context['page_obj']
-            ),
-            VARIABLE_POSTS
-        )
-
-    def test_paginator_profile_two(self):
-        """Провекра пагинатора на странице профайла, вторая страница."""
-        response = self.client.get(reverse(
-            'posts:profile', kwargs={'username': self.user}
-        ) + '?page=2')
-        self.assertEqual(
-            len(
-                response.context['page_obj']
-            ),
-            COUNT_POSTS_LIMIT
-        )
+        for resp in template_response:
+            with self.subTest(resp=resp):
+                if self.authorized_client:
+                    response = resp
+                    self.assertEqual(
+                        len(
+                            response.context['page_obj']
+                        ),
+                        COUNT_POSTS_LIMIT,
+                    )
 
 
 class FollowViewsTest(TestCase):
