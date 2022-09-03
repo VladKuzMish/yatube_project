@@ -320,9 +320,9 @@ class FollowViewsTest(TestCase):
     def test_follow_on_user(self):
         """Проверка подписки на пользователя."""
         self.assertFalse(Follow.objects.filter(
-                author=self.author,
-                user=self.user,
-            ).exists())
+            author=self.author,
+            user=self.user,
+        ).exists())
 
         count_follow = Follow.objects.count()
         self.user_client.post(
@@ -331,9 +331,9 @@ class FollowViewsTest(TestCase):
         Follow.objects.all().latest('id')
         self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertTrue(Follow.objects.filter(
-                author=self.author,
-                user=self.user,
-            ).exists())
+            author=self.author,
+            user=self.user,
+        ).exists())
 
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
