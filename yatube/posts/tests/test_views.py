@@ -1,3 +1,5 @@
+from http import HTTPStatus
+
 from django.test import TestCase, Client
 from django.urls import reverse
 from django import forms
@@ -52,26 +54,24 @@ class StaticURLTests(TestCase):
 
         cache.clear()
 
-    def atributs_posts(self, response, post, url):
-        response = response.get(url)
-        if url == reverse(
-            'posts:post_detail',
-                kwargs={'post_id': self.post.id}):
-            post_in_response = response.context['post']
+    def checking_posts_object(self, context, is_single_post=False):
+        """Метод тестирования объектов поста."""
+        if is_single_post:
+            post = context['post']
         else:
-            post_in_response = response.context['page_obj'][0]
+            post = context['page_obj'][0]
 
         post_attr = {
-            post.text: post_in_response.text,
-            post.id: post_in_response.id,
-            post.group: post_in_response.group,
-            post.author: post_in_response.author,
-            post.image: post_in_response.image
+            self.post.text: post.text,
+            self.post.id: post.id,
+            self.post.group: post.group,
+            self.post.author: post.author,
+            self.post.image: post.image
         }
 
         for attr1, attr2 in post_attr.items():
             with self.subTest(attr1=attr1):
-                self.assertAlmostEqual(attr1, attr2)
+                self.assertEqual(attr1, attr2)
 
     def test_pages_uses_correct_template(self):
         """Проверка правильности использования шаблонов."""
@@ -102,34 +102,26 @@ class StaticURLTests(TestCase):
 
     def test_index_page_show_correct_context(self):
         """Провекра корректности контекста главной страницы"""
-        response = self.authorized_client
-        url = reverse('posts:index')
-        post = self.post
-        return self.atributs_posts(response, post, url)
+        response = self.authorized_client.get(
+            reverse('posts:index'))
+
+        self.checking_posts_object(response.context)
 
     def test_group_posts_page_show_correct_context(self):
         """Провекра корректности контекста страницы с группами"""
         response = self.authorized_client.get(
             reverse('posts:group_list', kwargs={'slug': f'{self.group.slug}'}))
-        post = response.context['page_obj'][0]
         group = response.context['group']
 
         self.assertEqual(group, self.group)
-        response = self.authorized_client
-        url = reverse(
-            'posts:group_list',
-            kwargs={'slug': f'{self.group.slug}'})
-        post = self.post
-
-        return self.atributs_posts(response, post, url)
+        self.checking_posts_object(response.context)
 
     def test_profile_page_show_correct_context(self):
         """Провекра корректности контекста страницы профайла."""
-        response = self.authorized_client
-        url = reverse('posts:profile', kwargs={'username': self.post.author})
-        post = self.post
+        response = self.authorized_client.get(
+            reverse('posts:profile', kwargs={'username': self.user}))
 
-        return self.atributs_posts(response, post, url)
+        self.checking_posts_object(response.context)
 
     def test_post_detail_show_correct_context(self):
         """Провекра корректности контекста страницы конкретного поста"""
@@ -140,6 +132,7 @@ class StaticURLTests(TestCase):
                         )
                     )
         self.assertEqual(response.context.get('post'), self.post)
+        self.checking_posts_object(response.context, True)
 
     def test_post_create_show_correct_context(self):
         """Провекра корректности контекста создания поста"""
@@ -246,9 +239,9 @@ class PaginatorViewsTest(TestCase):
         Post.objects.bulk_create(heap_of_posts)
 
     def setUp(self):
-        self.guest = User.objects.create_user(username='NoName')
+        self.any_user = User.objects.create_user(username='NoName')
         self.authorized_client = Client()
-        self.authorized_client.force_login(self.guest)
+        self.authorized_client.force_login(self.any_user)
         self.user = User.objects.get(username='author_test')
         self.author_client = Client()
         self.author_client.force_login(self.user)
@@ -256,14 +249,10 @@ class PaginatorViewsTest(TestCase):
         cache.clear()
 
     def test_pages_contains_ten_records(self):
-        '''
-        количество постов:
-        на первой странице,
-        на странице группы
-        на странице профиля
-        равно количеству указанному в константе COUNT_POSTS_LIMIT_1
-        в test/constants.py
-        '''
+        """
+        Тестирование паджинатора для первых страниц
+        главной, групповой и страниц профиля.
+        """
         template_response = [
             self.authorized_client.get(reverse('posts:index')),
             self.authorized_client.get(
@@ -286,14 +275,10 @@ class PaginatorViewsTest(TestCase):
                     )
 
     def test_pages_contains_tree_records(self):
-        '''
-        количество постов:
-        на второй странице,
-        на второй странице группы,
-        на второй странице профиля
-        равно количеству указанному в константе COUNT_POSTS_LIMIT_1
-        в test/constants.py
-        '''
+        """
+        Тестирование паджинатора для вторых страниц
+        главной, групповой и страниц профиля.
+        """
         template_response = [
             self.client.get(reverse('posts:index') + '?page=2'),
             self.authorized_client.get(
@@ -334,14 +319,21 @@ class FollowViewsTest(TestCase):
 
     def test_follow_on_user(self):
         """Проверка подписки на пользователя."""
+        self.assertFalse(Follow.objects.filter(
+                author=self.author,
+                user=self.user,
+            ).exists())
+
         count_follow = Follow.objects.count()
         self.user_client.post(
             reverse('posts:profile_follow', kwargs={'username': self.author})
         )
-        follow = Follow.objects.all().latest('id')
+        Follow.objects.all().latest('id')
         self.assertEqual(Follow.objects.count(), count_follow + 1)
-        self.assertEqual(follow.author_id, self.author.id)
-        self.assertEqual(follow.user_id, self.user.id)
+        self.assertTrue(Follow.objects.filter(
+                author=self.author,
+                user=self.user,
+            ).exists())
 
     def test_unfollow_on_user(self):
         """Проверка отписки от пользователя."""
@@ -350,20 +342,15 @@ class FollowViewsTest(TestCase):
             author=self.author
         )
         count_follow = Follow.objects.count()
-        is_follow = Follow.objects.filter(
-            user=self.user,
-            author=self.author
-        ).exists()
 
-        if is_follow:
-            self.user_client.post(
+        response = self.user_client.post(
                 reverse('posts:profile_unfollow',
                         kwargs={'username': self.author})
             )
-            self.assertEqual(Follow.objects.count(), count_follow - 1)
+        self.assertEqual(Follow.objects.count(), count_follow - 1)
 
         response = self.user_client.post(
             reverse('posts:profile_unfollow', kwargs={'username': self.author})
         )
 
-        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.status_code, HTTPStatus.FOUND)

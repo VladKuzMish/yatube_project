@@ -61,25 +61,37 @@ class PostFormTests(TestCase):
             content_type='image/gif'
         )
         posts_count = Post.objects.count()
+        posts_before = set(Post.objects.all())
+
+        post_after = Post.objects.all()
+
         form_data = {
             'text': 'Тестовый текст',
             'group': self.group.id,
             'image': uploaded
         }
+
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True,
         )
+        post_count_add = Post.objects.count()
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': self.author.username
         }))
-        self.assertEqual(Post.objects.count(), posts_count + 1)
-        last_post = Post.objects.first()
-        self.assertEqual(last_post.author, self.author)
-        self.assertEqual(last_post.text, form_data['text'])
-        self.assertEqual(last_post.group.id, form_data['group'])
-        self.assertEqual(last_post.image, f'posts/{uploaded.name}')
+
+        self.assertEqual(post_count_add, posts_count + 1)
+
+        last_post = (set(post_after) - set(posts_before)).pop()
+
+        self.assertTrue(
+            Post.objects.filter(
+                group=self.group,
+                text=last_post.text,
+                image=f'posts/{uploaded.name}',
+            ).exists()
+        )
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -110,7 +122,7 @@ class PostFormTests(TestCase):
             follow=True,
         )
         self.assertRedirects(response, reverse(('posts:post_detail'), kwargs={
-            'post_id': f'{self.post.id}',
+            'post_id': self.post.id,
         }))
         self.assertEqual(Post.objects.count(), posts_count)
         self.assertTrue(
@@ -147,8 +159,8 @@ class PostFormTests(TestCase):
 
     def test_post_comment(self):
         """Валидная форма создаёт комментарий к посту."""
-        comment_count = Comment.objects.count()
         comment_before = set(Comment.objects.all())
+        comment_count = Comment.objects.count()
 
         comment_2 = Comment.objects.create(
             post=self.post,

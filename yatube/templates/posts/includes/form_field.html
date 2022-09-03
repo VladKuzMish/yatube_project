@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% load user_filters %}
 {% for field in form %} 
     <div class="form-group row my-3">
     <label for="{{ field.id_for_label }}">
