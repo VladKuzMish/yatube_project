@@ -344,9 +344,8 @@ class FollowViewsTest(TestCase):
         count_follow = Follow.objects.count()
 
         response = self.user_client.post(
-                reverse('posts:profile_unfollow',
-                        kwargs={'username': self.author})
-            )
+            reverse('posts:profile_unfollow', kwargs={'username': self.author})
+        )
         self.assertEqual(Follow.objects.count(), count_follow - 1)
 
         response = self.user_client.post(
