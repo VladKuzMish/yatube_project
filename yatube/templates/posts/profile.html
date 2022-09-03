@@ -34,7 +34,9 @@
         Подписаться
       </a>
    {% endif %}   
-   {% include 'posts/includes/form_field.html' %} 
+   {% for post in page_obj %}
+            {% include 'posts/includes/form_field.html' %}
+            {% endfor %}
   {% include 'posts/includes/paginator.html' %}        
 </div>
 {% endblock %}

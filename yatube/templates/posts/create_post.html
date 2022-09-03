@@ -32,7 +32,9 @@
             {% load user_filters %}
             {% include 'posts/includes/form_errors.html' %}
               {% csrf_token %}
-            {% include 'posts/includes/form_field.html' %} 
+              {% for field in form %}
+            {% include 'posts/includes/form_field.html' %}
+            {% endfor %}
               <div class="col-md-6 offset-md-4">
                 <button type="submit" class="btn btn-primary">
                   {% if is_edit %}

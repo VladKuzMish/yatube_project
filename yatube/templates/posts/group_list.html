@@ -7,6 +7,8 @@
 <center><h1>{{ group.title }}</h1></center>
 <center><p>{{ group.description }}</p></center>
 <div class="container py-5">
-  {% include 'posts/includes/form_field.html' %} 
+  {% for post in page_obj %}
+    {% include 'posts/includes/posts_card.html' %}
+  {% endfor %} 
 </div>  
 {% endblock %}

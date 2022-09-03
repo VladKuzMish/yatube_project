@@ -6,6 +6,8 @@
 {% block content %}
 {% include 'posts/includes/switcher.html' %}
     <div class="container py-5">
+    {% for post in page_obj %}
     {%include 'posts/includes/posts_card.html'%}
+    {% endfor %}
     {% include 'posts/includes/paginator.html' %}
 {% endblock %}
