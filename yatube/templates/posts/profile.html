@@ -19,6 +19,7 @@
   <h3>Всего постов: {{ author.posts.count }} </h3>
   <h3>Всего подписчиков: {{ author.following.count }} </h3>
   <h3>Всего подписок: {{ author.follower.count }} </h3>
+  {% if user.is_authenticated %}
   {% if following %}
     <a
       class="btn btn-lg btn-light"
@@ -33,9 +34,10 @@
       >
         Подписаться
       </a>
+   {% endif %}
    {% endif %}   
    {% for post in page_obj %}
-            {% include 'posts/includes/form_field.html' %}
+            {% include 'includes/form_field.html' %}
             {% endfor %}
   {% include 'posts/includes/paginator.html' %}        
 </div>

@@ -1,3 +1,7 @@
 Django==2.2.19
 pytz==2022.1
 sqlparse==0.4.2
+coverage==6.4.2
+isort==5.10.1
+Pillow==9.2.0
+sorl-thumbnail==12.8.0

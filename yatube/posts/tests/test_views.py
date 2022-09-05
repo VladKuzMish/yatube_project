@@ -163,15 +163,16 @@ class StaticURLTests(TestCase):
             with self.subTest(value=value):
                 form_fields = response.context.get('form').fields.get(value)
                 self.assertIsInstance(form_fields, expected)
-                self.assertEqual(
-                    response.context.get('post').text, self.post.text
-                )
-                self.assertTrue(response.context.get('is_edit'))
-                self.assertEqual(response.context.get('is_edit'), True)
+
+        self.assertEqual(
+            response.context.get('post').text, self.post.text
+        )
+        self.assertTrue(response.context.get('is_edit'))
+        self.assertEqual(response.context.get('is_edit'), True)
 
     def test_additional_verification_when_creating_a_post(self):
-        '''Пост появляется на главной странице сайта,
-        на странице выбранной группы, в профайле пользователя.'''
+        """Пост появляется на главной странице сайта,
+        на странице выбранной группы, в профайле пользователя."""
         project_pages = [
             reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
@@ -180,14 +181,13 @@ class StaticURLTests(TestCase):
         for address in project_pages:
             with self.subTest(adress=address):
                 response = self.author_client.get(address)
-                self.assertEqual(
-                    response.context.get('page_obj')[0], self.post
-                )
+                context = response.context.get('page_obj')[0]
+                self.assertEqual(context, self.post)
 
     def test_the_post_was_not_included_in_the_group(self):
-        '''Если при создании поста указать группу,
+        """Если при создании поста указать группу,
         проверяем, что этот пост не попал в группу,
-        для которой не был предназначен.'''
+        для которой не был предназначен."""
         response = self.authorized_client.get(
             reverse(
                 'posts:group_list',
@@ -200,23 +200,25 @@ class StaticURLTests(TestCase):
         """Проверяем кеширование главной страницы."""
         response = self.authorized_client.get(reverse('posts:index'))
         with_cache = response.content
-
-        Post.objects.create(
-            group=self.group,
-            text='Новый текст, после кэша',
-            author=self.user,
+        Post.objects.all().delete()
+        response = self.authorized_client.get(reverse('posts:index'))
+        after_clearing_the_cache = response.content
+        self.assertEqual(
+            with_cache,
+            after_clearing_the_cache
         )
 
         cache.clear()
 
         response = self.authorized_client.get(reverse('posts:index'))
-        after_clearing_the_cache = response.content
-        self.assertNotEqual(with_cache,
-                            after_clearing_the_cache)
+        response_without_post_and_cache = response.content
+        self.assertNotEqual(
+            with_cache, response_without_post_and_cache
+        )
 
 
 class PaginatorViewsTest(TestCase):
-    '''Класс для тестирования пагинатора'''
+    """Класс для тестирования пагинатора."""
 
     @classmethod
     def setUpClass(cls):
@@ -274,7 +276,7 @@ class PaginatorViewsTest(TestCase):
                         VARIABLE_POSTS,
                     )
 
-    def test_pages_contains_tree_records(self):
+    def test_pages_contains_three_records(self):
         """
         Тестирование паджинатора для вторых страниц
         главной, групповой и страниц профиля.
@@ -304,6 +306,8 @@ class PaginatorViewsTest(TestCase):
 
 
 class FollowViewsTest(TestCase):
+    """Класс тестирования подписок."""
+
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -328,7 +332,6 @@ class FollowViewsTest(TestCase):
         self.user_client.post(
             reverse('posts:profile_follow', kwargs={'username': self.author})
         )
-        Follow.objects.all().latest('id')
         self.assertEqual(Follow.objects.count(), count_follow + 1)
         self.assertTrue(Follow.objects.filter(
             author=self.author,
@@ -348,8 +351,29 @@ class FollowViewsTest(TestCase):
         )
         self.assertEqual(Follow.objects.count(), count_follow - 1)
 
-        response = self.user_client.post(
-            reverse('posts:profile_unfollow', kwargs={'username': self.author})
-        )
-
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
+
+    def inability_to_subscribe_yourself(self):
+        """Тест на проверку невозможности подписаться на самого себя."""
+        count_follow = Follow.objects.create(
+            user=self.user,
+            author=self.author
+        )
+        response = self.user_client.get('/follow/')
+        self.assertNotIn(count_follow, response)
+
+    def inability_to_subscribe_again(self):
+        """Тест на проверку невозможности подписаться."""
+        Follow.objects.create(
+            user=self.user,
+            author=self.author
+        )
+        count_follow_1 = Follow.objects.count()
+
+        Follow.objects.create(
+            user=self.user,
+            author=self.author
+        )
+        count_follow_2 = Follow.objects.count()
+
+        self.assertEqual(count_follow_1, count_follow_2)

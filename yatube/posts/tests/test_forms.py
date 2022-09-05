@@ -10,7 +10,6 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from ..forms import PostForm
 from ..models import Group, Post, Comment, User
 
-
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
 
@@ -34,6 +33,19 @@ class PostFormTests(TestCase):
             text='Тестовый комментарий',
             author=cls.author,
         )
+        cls.small_gif = (
+            b'\x47\x49\x46\x38\x39\x61\x02\x00'
+            b'\x01\x00\x80\x00\x00\x00\x00\x00'
+            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
+            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
+            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
+            b'\x0A\x00\x3B'
+        )
+        cls.uploaded = SimpleUploadedFile(
+            name='small.gif',
+            content=cls.small_gif,
+            content_type='image/gif'
+        )
         cls.form = PostForm()
 
     @classmethod
@@ -47,51 +59,31 @@ class PostFormTests(TestCase):
 
     def test_authorized_user_publish_posts(self):
         """Авторизованный пользователь может публиковать посты."""
-        small_gif = (
-            b'\x47\x49\x46\x38\x39\x61\x02\x00'
-            b'\x01\x00\x80\x00\x00\x00\x00\x00'
-            b'\xFF\xFF\xFF\x21\xF9\x04\x00\x00'
-            b'\x00\x00\x00\x2C\x00\x00\x00\x00'
-            b'\x02\x00\x01\x00\x00\x02\x02\x0C'
-            b'\x0A\x00\x3B'
-        )
-        uploaded = SimpleUploadedFile(
-            name='small.gif',
-            content=small_gif,
-            content_type='image/gif'
-        )
-        posts_count = Post.objects.count()
-        posts_before = set(Post.objects.all())
-
-        post_after = Post.objects.all()
+        old_posts = set(Post.objects.all())
 
         form_data = {
-            'text': 'Тестовый текст',
+            'text': 'Тестовый пост',
             'group': self.group.id,
-            'image': uploaded
+            'image': self.uploaded
         }
-
         response = self.authorized_client.post(
             reverse('posts:post_create'),
             data=form_data,
             follow=True,
         )
-        post_count_add = Post.objects.count()
+        new_posts = set(Post.objects.all())
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': self.author.username
         }))
+        uniqie_post = (len(set(new_posts)) - len(set(old_posts)))
+        uniqie_post_not_int = Post.objects.first()
 
-        self.assertEqual(post_count_add, posts_count + 1)
+        self.assertEqual(uniqie_post, 1)
 
-        last_post = (set(post_after) - set(posts_before)).pop()
-
-        self.assertTrue(
-            Post.objects.filter(
-                group=self.group,
-                text=last_post.text,
-                image=f'posts/{uploaded.name}',
-            ).exists()
-        )
+        post_image = uniqie_post_not_int.image
+        self.assertEqual(post_image, f'posts/{self.uploaded.name}')
+        self.assertEqual(form_data['text'], uniqie_post_not_int.text)
+        self.assertEqual(form_data['group'], uniqie_post_not_int.group.id)
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -129,7 +121,7 @@ class PostFormTests(TestCase):
             Post.objects.filter(
                 id=self.post.id,
                 text=form_data['text'],
-                group=f'{self.group.id}',
+                group=self.group.id,
             ).exists()
         )
 
@@ -159,30 +151,21 @@ class PostFormTests(TestCase):
 
     def test_post_comment(self):
         """Валидная форма создаёт комментарий к посту."""
-        comment_before = set(Comment.objects.all())
-        comment_count = Comment.objects.count()
-
-        comment_2 = Comment.objects.create(
-            post=self.post,
-            author=self.author,
-            text='Тестовый комментарий',
-        )
-
-        comment_count_add = Comment.objects.count()
-        comment_after = Comment.objects.all()
+        old_comment = set(Comment.objects.all())
 
         form_fields = {
             'author': self.author,
-            'text': comment_2.text,
+            'text': 'Тестовый комментарий',
             'post_id': self.post.id,
         }
-        response = self.authorized_client.get(
+        response = self.authorized_client.post(
             reverse('posts:add_comment',
                     kwargs={'post_id': self.post.id}
                     ),
             data=form_fields,
             follow=True
         )
+        new_comment = set(Comment.objects.all())
         self.assertRedirects(
             response,
             reverse(
@@ -190,18 +173,11 @@ class PostFormTests(TestCase):
                 kwargs={'post_id': self.post.id}
             )
         )
-
+        uniqie_comment = (len(set(new_comment)) - len(set(old_comment)))
+        uniqie_comment_not_int = Comment.objects.first()
+        self.assertEqual(uniqie_comment, 1)
+        self.assertEqual(form_fields['author'], uniqie_comment_not_int.author)
         self.assertEqual(
-            comment_count_add,
-            comment_count + 1,
+            form_fields['post_id'], uniqie_comment_not_int.post.id
         )
-
-        last_comment = (set(comment_after) - set(comment_before)).pop()
-
-        self.assertTrue(
-            Comment.objects.filter(
-                author=self.author,
-                text=last_comment.text,
-                post_id=self.post.id,
-            ).exists()
-        )
+        self.assertEqual(form_fields['text'], uniqie_comment_not_int.text)
