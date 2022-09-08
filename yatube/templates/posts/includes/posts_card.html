@@ -1,5 +1,4 @@
 {% load thumbnail %}
-{% for post in page_obj %}
 <article>
     <ul>
       <li>
@@ -18,5 +17,4 @@
       <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
     {% endif %}
   </article>
-{% endfor %}
 {% if not forloop.last %}<hr>{% endif %}

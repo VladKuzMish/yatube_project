@@ -75,15 +75,16 @@ class PostFormTests(TestCase):
         self.assertRedirects(response, reverse(('posts:profile'), kwargs={
             'username': self.author.username
         }))
-        uniqie_post = (len(set(new_posts)) - len(set(old_posts)))
-        uniqie_post_not_int = Post.objects.first()
+        diff_sets_posts = (set(new_posts) - set(old_posts))
+        self.assertEqual(len(diff_sets_posts), 1)
 
-        self.assertEqual(uniqie_post, 1)
+        unicie_post = diff_sets_posts.pop()
 
-        post_image = uniqie_post_not_int.image
-        self.assertEqual(post_image, f'posts/{self.uploaded.name}')
-        self.assertEqual(form_data['text'], uniqie_post_not_int.text)
-        self.assertEqual(form_data['group'], uniqie_post_not_int.group.id)
+        self.assertEqual(
+            unicie_post.image, f'posts/{self.uploaded.name}'
+        )
+        self.assertEqual(form_data['text'], unicie_post.text)
+        self.assertEqual(form_data['group'], unicie_post.group.id)
 
     def test_cant_create_post_without_text(self):
         """Тест на проверку невозможности создать пустой пост."""
@@ -173,11 +174,14 @@ class PostFormTests(TestCase):
                 kwargs={'post_id': self.post.id}
             )
         )
-        uniqie_comment = (len(set(new_comment)) - len(set(old_comment)))
-        uniqie_comment_not_int = Comment.objects.first()
-        self.assertEqual(uniqie_comment, 1)
-        self.assertEqual(form_fields['author'], uniqie_comment_not_int.author)
+        diff_sets_comments = (set(new_comment) - set(old_comment))
+
+        self.assertEqual(len(diff_sets_comments), 1)
+
+        uniqie_comment = diff_sets_comments.pop()
+
+        self.assertEqual(form_fields['author'], uniqie_comment.author)
         self.assertEqual(
-            form_fields['post_id'], uniqie_comment_not_int.post.id
+            form_fields['post_id'], uniqie_comment.post.id
         )
-        self.assertEqual(form_fields['text'], uniqie_comment_not_int.text)
+        self.assertEqual(form_fields['text'], uniqie_comment.text)

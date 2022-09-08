@@ -350,30 +350,35 @@ class FollowViewsTest(TestCase):
             reverse('posts:profile_unfollow', kwargs={'username': self.author})
         )
         self.assertEqual(Follow.objects.count(), count_follow - 1)
+        self.assertFalse(Follow.objects.filter(
+            author=self.author,
+            user=self.user,
+        ).exists())
 
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
     def inability_to_subscribe_yourself(self):
         """Тест на проверку невозможности подписаться на самого себя."""
-        count_follow = Follow.objects.create(
-            user=self.user,
-            author=self.author
+
+        response = self.user_client.get(
+            reverse('posts:profile_unfollow', kwargs={'username': self.user})
         )
-        response = self.user_client.get('/follow/')
-        self.assertNotIn(count_follow, response)
+        self.assertFalse(response)
 
     def inability_to_subscribe_again(self):
-        """Тест на проверку невозможности подписаться."""
-        Follow.objects.create(
-            user=self.user,
-            author=self.author
+        """Тест на проверку невозможности подписаться повторно."""
+        response_1 = self.user_client.post(
+            reverse('posts:profile_unfollow', kwargs={'username': self.author})
         )
-        count_follow_1 = Follow.objects.count()
 
-        Follow.objects.create(
-            user=self.user,
-            author=self.author
+        response_2 = self.user_client.post(
+            reverse('posts:profile_unfollow', kwargs={'username': self.author})
         )
-        count_follow_2 = Follow.objects.count()
+        count_follow = set(Follow.objects.filter(
+            author=self.author,
+            user=self.user,
+        ).exists())
 
-        self.assertEqual(count_follow_1, count_follow_2)
+        self.assertEqual(len(count_follow), 1)
+
+        self.assertEqual(response_1, response_2)
