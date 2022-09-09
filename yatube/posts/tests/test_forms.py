@@ -62,6 +62,7 @@ class PostFormTests(TestCase):
         old_posts = set(Post.objects.all())
 
         form_data = {
+            'author': self.author,
             'text': 'Тестовый пост',
             'group': self.group.id,
             'image': self.uploaded
@@ -83,6 +84,7 @@ class PostFormTests(TestCase):
         self.assertEqual(
             unicie_post.image, f'posts/{self.uploaded.name}'
         )
+        self.assertEqual(form_data['author'], unicie_post.author)
         self.assertEqual(form_data['text'], unicie_post.text)
         self.assertEqual(form_data['group'], unicie_post.group.id)
 

@@ -16,6 +16,7 @@ class StaticURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
+        cls.author = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
             description='Тестовое описание',
@@ -29,7 +30,7 @@ class StaticURLTests(TestCase):
         cls.post = Post.objects.create(
             text='Тестовый пост',
             group=cls.group,
-            author=User.objects.create_user(username='auth'),
+            author=cls.author,
         )
 
     def setUp(self):
@@ -66,7 +67,7 @@ class StaticURLTests(TestCase):
             self.post.id: post.id,
             self.post.group: post.group,
             self.post.author: post.author,
-            self.post.image: post.image
+            self.post.image: post.image,
         }
 
         for attr1, attr2 in post_attr.items():
@@ -173,6 +174,11 @@ class StaticURLTests(TestCase):
     def test_additional_verification_when_creating_a_post(self):
         """Пост появляется на главной странице сайта,
         на странице выбранной группы, в профайле пользователя."""
+        Post.objects.create(
+            group=self.group,
+            author=self.author,
+            text='Уникальный текст'
+        )
         project_pages = [
             reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
@@ -180,9 +186,14 @@ class StaticURLTests(TestCase):
         ]
         for address in project_pages:
             with self.subTest(adress=address):
-                response = self.author_client.get(address)
-                context = response.context.get('page_obj')[0]
-                self.assertEqual(context, self.post)
+
+                self.assertTrue(
+                    Post.objects.filter(
+                        group=self.group,
+                        author=self.author,
+                        text='Уникальный текст'
+                    ).exists()
+                )
 
     def test_the_post_was_not_included_in_the_group(self):
         """Если при создании поста указать группу,
@@ -360,19 +371,27 @@ class FollowViewsTest(TestCase):
     def inability_to_subscribe_yourself(self):
         """Тест на проверку невозможности подписаться на самого себя."""
 
-        response = self.user_client.get(
-            reverse('posts:profile_unfollow', kwargs={'username': self.user})
+        self.user_client.get(
+            reverse('posts:profile_follow', kwargs={'username': self.user})
         )
-        self.assertFalse(response)
+        self.assertFalse(Follow.objects.filter(
+            author=self.author,
+            user=self.user,
+        ).exists())
 
     def inability_to_subscribe_again(self):
         """Тест на проверку невозможности подписаться повторно."""
+        Follow.objects.create(
+            user=self.user,
+            author=self.author
+        )
+
         response_1 = self.user_client.post(
-            reverse('posts:profile_unfollow', kwargs={'username': self.author})
+            reverse('posts:profile_follow', kwargs={'username': self.author})
         )
 
         response_2 = self.user_client.post(
-            reverse('posts:profile_unfollow', kwargs={'username': self.author})
+            reverse('posts:profile_follow', kwargs={'username': self.author})
         )
         count_follow = set(Follow.objects.filter(
             author=self.author,
