@@ -121,7 +121,6 @@ class StaticURLTests(TestCase):
         """Провекра корректности контекста страницы профайла."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.user}))
-
         self.checking_posts_object(response.context)
 
     def test_post_detail_show_correct_context(self):

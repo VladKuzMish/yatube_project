@@ -14,7 +14,9 @@
     {% endthumbnail %}
     <a href="{% url 'posts:post_detail' post.id %}">Подробная информация</a>    
     {% if post.group %}
+    {% if not group %}
       <a href="{% url 'posts:group_list' post.group.slug %}">Все записи группы</a>
+    {% endif %}
     {% endif %}
   </article>
 {% if not forloop.last %}<hr>{% endif %}
