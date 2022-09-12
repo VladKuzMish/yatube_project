@@ -6,7 +6,7 @@ from django import forms
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.cache import cache
 
-from ..models import Group, Post, Follow, User
+from ..models import Group, Post, Follow, User, Comment
 from ..contstants import VARIABLE_POSTS, COUNT_POSTS_LIMIT, NAME_USERS
 
 
@@ -30,6 +30,11 @@ class StaticURLTests(TestCase):
         cls.post = Post.objects.create(
             text='Тестовый пост',
             group=cls.group,
+            author=cls.author,
+        )
+        cls.comment = Comment.objects.create(
+            post=cls.post,
+            text='Тестовый комментарий',
             author=cls.author,
         )
 
@@ -121,6 +126,19 @@ class StaticURLTests(TestCase):
         """Провекра корректности контекста страницы профайла."""
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.user}))
+
+        first_object = response.context['page_obj'][0]
+        profile_author = first_object.author
+        # profile_follow = first_object.following
+
+        self.assertEqual(profile_author, self.author)
+        self.assertEqual(
+            response.context.get('following'),
+            Follow.objects.filter(
+                user=self.user,
+                author=self.author).exists()
+            )
+
         self.checking_posts_object(response.context)
 
     def test_post_detail_show_correct_context(self):
@@ -131,7 +149,28 @@ class StaticURLTests(TestCase):
                         kwargs={'post_id': self.post.id})
                         )
                     )
+        form_fields = {
+            'text': forms.fields.CharField
+        }
+        for value, expected in form_fields.items():
+            with self.subTest(value=value):
+                form_fields = response.context.get('form').fields.get(value)
+                self.assertIsInstance(form_fields, expected)
+
         self.assertEqual(response.context.get('post'), self.post)
+        comment = Comment.objects.filter(
+                post=self.post,
+                author=self.author,
+                text=self.comment.text
+                )
+        comment_list = list(comment)
+        response_commet = response.context.get('comments')
+        response_commet_list = list(response_commet)
+        self.assertEqual(
+            response_commet_list,
+            comment_list
+            )
+
         self.checking_posts_object(response.context, True)
 
     def test_post_create_show_correct_context(self):
@@ -173,7 +212,7 @@ class StaticURLTests(TestCase):
     def test_additional_verification_when_creating_a_post(self):
         """Пост появляется на главной странице сайта,
         на странице выбранной группы, в профайле пользователя."""
-        Post.objects.create(
+        creat_post = Post.objects.create(
             group=self.group,
             author=self.author,
             text='Уникальный текст'
@@ -186,13 +225,7 @@ class StaticURLTests(TestCase):
         for address in project_pages:
             with self.subTest(adress=address):
 
-                self.assertTrue(
-                    Post.objects.filter(
-                        group=self.group,
-                        author=self.author,
-                        text='Уникальный текст'
-                    ).exists()
-                )
+                self.assertEqual(creat_post, Post.objects.first())
 
     def test_the_post_was_not_included_in_the_group(self):
         """Если при создании поста указать группу,
@@ -367,7 +400,7 @@ class FollowViewsTest(TestCase):
 
         self.assertEqual(response.status_code, HTTPStatus.FOUND)
 
-    def inability_to_subscribe_yourself(self):
+    def test_inability_to_subscribe_yourself(self):
         """Тест на проверку невозможности подписаться на самого себя."""
 
         self.user_client.get(
@@ -378,25 +411,23 @@ class FollowViewsTest(TestCase):
             user=self.user,
         ).exists())
 
-    def inability_to_subscribe_again(self):
+    def test_inability_to_subscribe_again(self):
         """Тест на проверку невозможности подписаться повторно."""
         Follow.objects.create(
             user=self.user,
             author=self.author
         )
 
-        response_1 = self.user_client.post(
+        self.user_client.post(
             reverse('posts:profile_follow', kwargs={'username': self.author})
         )
 
-        response_2 = self.user_client.post(
+        self.user_client.post(
             reverse('posts:profile_follow', kwargs={'username': self.author})
         )
         count_follow = set(Follow.objects.filter(
             author=self.author,
             user=self.user,
-        ).exists())
+        ))
 
         self.assertEqual(len(count_follow), 1)
-
-        self.assertEqual(response_1, response_2)
