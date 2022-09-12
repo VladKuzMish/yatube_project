@@ -137,7 +137,7 @@ class StaticURLTests(TestCase):
             Follow.objects.filter(
                 user=self.user,
                 author=self.author).exists()
-            )
+        )
 
         self.checking_posts_object(response.context)
 
@@ -159,10 +159,10 @@ class StaticURLTests(TestCase):
 
         self.assertEqual(response.context.get('post'), self.post)
         comment = Comment.objects.filter(
-                post=self.post,
-                author=self.author,
-                text=self.comment.text
-                )
+            post=self.post,
+            author=self.author,
+            text=self.comment.text
+        )
         comment_list = list(comment)
         response_commet = response.context.get('comments')
         response_commet_list = list(response_commet)
