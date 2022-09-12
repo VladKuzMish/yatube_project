@@ -169,7 +169,7 @@ class StaticURLTests(TestCase):
         self.assertEqual(
             response_commet_list,
             comment_list
-            )
+        )
 
         self.checking_posts_object(response.context, True)
 
