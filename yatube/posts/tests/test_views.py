@@ -127,9 +127,7 @@ class StaticURLTests(TestCase):
         response = self.authorized_client.get(
             reverse('posts:profile', kwargs={'username': self.user}))
 
-        first_object = response.context['page_obj'][0]
-        profile_author = first_object.author
-        # profile_follow = first_object.following
+        profile_author = response.context['author']
 
         self.assertEqual(profile_author, self.author)
         self.assertEqual(
@@ -158,17 +156,11 @@ class StaticURLTests(TestCase):
                 self.assertIsInstance(form_fields, expected)
 
         self.assertEqual(response.context.get('post'), self.post)
-        comment = Comment.objects.filter(
-            post=self.post,
-            author=self.author,
-            text=self.comment.text
-        )
-        comment_list = list(comment)
-        response_commet = response.context.get('comments')
-        response_commet_list = list(response_commet)
+        comment = self.comment
+        response_commet = Comment.objects.first()
         self.assertEqual(
-            response_commet_list,
-            comment_list
+            response_commet,
+            comment
         )
 
         self.checking_posts_object(response.context, True)
