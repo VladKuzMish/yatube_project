@@ -157,9 +157,9 @@ class StaticURLTests(TestCase):
 
         self.assertEqual(response.context.get('post'), self.post)
         comment = self.comment
-        response_commet = Comment.objects.first()
+        first_commet = Comment.objects.first()
         self.assertEqual(
-            response_commet,
+            first_commet,
             comment
         )
 

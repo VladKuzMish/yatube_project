@@ -1,7 +1,8 @@
-Django==2.2.19
-pytz==2022.1
-sqlparse==0.4.2
 coverage==6.4.2
+Django==2.2.19
+django-debug-toolbar==3.2.4
 isort==5.10.1
 Pillow==9.2.0
+pytz==2022.1
 sorl-thumbnail==12.8.0
+sqlparse==0.4.2
